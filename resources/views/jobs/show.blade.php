@@ -28,10 +28,23 @@
             <p class="text-gray-600 whitespace-pre-line">{{ $job->requirements }}</p>
         </div>
 
+        @if(session('success'))
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <!-- Tombol Lamar Sekarang (PBI-06) -->
         <div class="pt-4 border-t flex justify-end">
-            <button class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition">
+            <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition">
                 Lamar Sekarang
-            </button>
+            </a>
         </div>
     </div>
 </body>
