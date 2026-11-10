@@ -29,3 +29,7 @@ Route::get('/register', function () {
 Route::get('/home', function () {
     return view('home');
 })->name('home');
+
+
+Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
+Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');

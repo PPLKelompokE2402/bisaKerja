@@ -6,16 +6,21 @@ use Illuminate\Http\Request;
 
 class ProviderController extends Controller
 {
+    public function create()
+    {
+        return view('auth.provider-biodata');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
-            'lokasi' => 'required|string|max:255',
+            'Lokasi' => 'required|string|max:255',
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
             'deskripsi' => 'nullable|string|max:1000',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'jenis_penyedia' => 'required|in:Individu,Rumah Tangga,Usaha/UKM',
+            'jenis_penyedia' => 'required|in:Individu,Rumah Tangga,Usaha/UMKM',
             'nama_usaha' => 'nullable|string|max:255',
             'dokumen_verifikasi' => 'nullable|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
@@ -33,7 +38,7 @@ class ProviderController extends Controller
         }
 
         return redirect()
-            ->route('provider.biodata')
+            ->route('provider.create')
             ->with('success', 'Pendaftaran berhasil!');
     }
 }
