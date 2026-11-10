@@ -193,7 +193,7 @@
                     orang untuk membantu pekerjaan.
                 </p>
 
-                <a href="#" class="btn btn-outline">
+                <a href="{{ route('provider.biodata') }}" class="btn btn-outline">
                     Daftar sebagai Pemberi Kerja
                 </a>
             </div>

@@ -6,7 +6,9 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\UseDemoEmployer;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/biodata-penyedia');
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::get('/biodata-penyedia', function () {
     return view('auth.biodata-penyedia');
