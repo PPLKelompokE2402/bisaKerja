@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\JobController;
+use App\Http\Controllers\ProviderController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/biodata-penyedia');
 
-Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
-Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/biodata-penyedia', function () {
+    return view('auth.biodata-penyedia');
+})->name('provider.biodata');
+
+Route::post('/biodata-penyedia', [ProviderController::class, 'store'])
+    ->name('provider.biodata.store');
