@@ -2,44 +2,48 @@
 
 namespace App\Models;
 
-use App\Enums\VacancyCategory;
-use App\Enums\VacancyDuration;
-use App\Enums\VacancyStatus;
 use Database\Factories\JobVacancyFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['title', 'category', 'location', 'work_date', 'duration', 'notes'])]
 class JobVacancy extends Model
 {
     /** @use HasFactory<JobVacancyFactory> */
     use HasFactory;
 
-    /**
-     * The model's default values for attributes.
-     *
-     * @var array<string, mixed>
-     */
+    protected $table = 'lowongan';
+
+    protected $primaryKey = 'id_lowongan';
+
+    public const CREATED_AT = 'dibuat_pada';
+
+    public const UPDATED_AT = 'diperbarui_pada';
+
     protected $attributes = [
-        'status' => 'dibuka',
-        'applicants_count' => 0,
+        'status_lowongan' => 'aktif',
+        'upah' => 0,
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    protected $fillable = [
+        'id_penyedia',
+        'id_kategori',
+        'judul',
+        'deskripsi',
+        'lokasi',
+        'latitude',
+        'longitude',
+        'upah',
+        'waktu_pekerjaan',
+        'status_lowongan',
+    ];
+
     protected function casts(): array
     {
         return [
-            'category' => VacancyCategory::class,
-            'duration' => VacancyDuration::class,
-            'status' => VacancyStatus::class,
-            'work_date' => 'date',
-            'applicants_count' => 'integer',
+            'waktu_pekerjaan' => 'datetime',
+            'upah' => 'decimal:2',
         ];
     }
 
@@ -50,7 +54,27 @@ class JobVacancy extends Model
      */
     public function employer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'id_penyedia', 'id_pengguna');
+    }
+
+    /**
+     * Get the category of the vacancy.
+     *
+     * @return BelongsTo<KategoriPekerjaan, $this>
+     */
+    public function kategori(): BelongsTo
+    {
+        return $this->belongsTo(KategoriPekerjaan::class, 'id_kategori', 'id_kategori');
+    }
+
+    /**
+     * Get applications for this vacancy.
+     *
+     * @return HasMany<Lamaran, $this>
+     */
+    public function lamaran(): HasMany
+    {
+        return $this->hasMany(Lamaran::class, 'id_lowongan', 'id_lowongan');
     }
 
     /**
@@ -58,6 +82,27 @@ class JobVacancy extends Model
      */
     public function isOpen(): bool
     {
-        return $this->status === VacancyStatus::Open;
+        return $this->status_lowongan === 'aktif';
+    }
+
+    /**
+     * Get human-readable status label.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status_lowongan) {
+            'aktif' => 'Dibuka',
+            'ditutup' => 'Ditutup',
+            'selesai' => 'Selesai',
+            default => ucfirst($this->status_lowongan ?? 'aktif'),
+        };
+    }
+
+    /**
+     * Dynamic applicants count.
+     */
+    public function getApplicantsCountAttribute(): int
+    {
+        return $this->lamaran()->count();
     }
 }

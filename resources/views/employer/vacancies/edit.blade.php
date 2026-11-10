@@ -3,7 +3,7 @@
         <a href="{{ route('employer.vacancies.index') }}" class="text-sm text-brand-700 hover:underline">&larr; Kembali ke Lowongan Saya</a>
 
         <h1 class="mt-4 text-2xl font-semibold text-brand-700">Kelola Lowongan</h1>
-        <p class="mt-1 text-sm text-gray-600">Ubah informasi, tutup, atau hapus lowongan "{{ $vacancy->title }}".</p>
+        <p class="mt-1 text-sm text-gray-600">Ubah informasi, tutup, atau hapus lowongan "{{ $vacancy->judul }}".</p>
 
         <form method="POST" action="{{ route('employer.vacancies.update', $vacancy) }}"
             class="mt-6 rounded-xl border border-gray-200 bg-white">
@@ -11,7 +11,7 @@
             @method('PUT')
 
             <div class="px-6 py-5">
-                <x-vacancy.form-fields :vacancy="$vacancy" :categories="$categories" :durations="$durations" />
+                <x-vacancy.form-fields :vacancy="$vacancy" :categories="$categories" />
             </div>
 
             <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
@@ -33,7 +33,7 @@
             <form method="POST" action="{{ route('employer.vacancies.status.update', $vacancy) }}">
                 @csrf
                 @method('PATCH')
-                <input type="hidden" name="status" value="{{ \App\Enums\VacancyStatus::Closed->value }}">
+                <input type="hidden" name="status" value="ditutup">
                 <button type="submit"
                     class="rounded-lg border border-gray-300 px-4 py-2 text-sm whitespace-nowrap text-gray-700 transition hover:bg-gray-100">Tutup Lowongan</button>
             </form>
@@ -54,4 +54,3 @@
         </div>
     </div>
 </x-layouts.employer>
-

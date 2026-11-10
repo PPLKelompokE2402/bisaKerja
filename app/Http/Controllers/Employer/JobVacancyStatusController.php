@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Employer;
 
-use App\Enums\VacancyStatus;
 use App\Http\Controllers\Controller;
 use App\Models\JobVacancy;
 use Illuminate\Http\RedirectResponse;
@@ -20,10 +19,10 @@ class JobVacancyStatusController extends Controller
         Gate::authorize('update', $vacancy);
 
         $validated = $request->validate([
-            'status' => ['required', Rule::enum(VacancyStatus::class)],
+            'status' => ['required', Rule::in(['aktif', 'ditutup'])],
         ]);
 
-        $vacancy->status = VacancyStatus::from($validated['status']);
+        $vacancy->status_lowongan = $validated['status'];
         $vacancy->save();
 
         $message = $vacancy->isOpen()

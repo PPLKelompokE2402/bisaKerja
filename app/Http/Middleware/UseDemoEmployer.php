@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Temporary stand-in for authentication until Login & Registrasi (SCRUM-51) is merged.
  *
- * When nobody is signed in, the first seeded employer is used for the current request only.
- * Replace this middleware with `auth` once the login feature is available.
+ * Automatically signs in as the demo employer ('penyedia_pekerjaan', e.g. Hikmal Alakbar)
+ * from the database if no user is currently authenticated.
  */
 class UseDemoEmployer
 {
@@ -26,11 +25,11 @@ class UseDemoEmployer
     {
         if ($request->user() === null) {
             $demoEmployer = User::query()
-                ->where('role', UserRole::Employer)
-                ->oldest('id')
+                ->where('role', 'penyedia_pekerjaan')
+                ->oldest('id_pengguna')
                 ->first();
 
-            abort_if($demoEmployer === null, 503, 'Belum ada akun pemberi kerja. Jalankan: php artisan db:seed');
+            abort_if($demoEmployer === null, 503, 'Belum ada akun penyedia pekerjaan di tabel pengguna. Pastikan database bisakerjaupdatedb sudah di-import.');
 
             Auth::setUser($demoEmployer);
         }

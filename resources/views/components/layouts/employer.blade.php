@@ -14,7 +14,7 @@
     <body class="min-h-screen bg-white font-sans text-gray-900 antialiased">
         <header class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 lg:px-12">
             <a href="{{ route('employer.vacancies.index') }}" class="text-xl font-semibold text-brand-700">bisaKerja</a>
-            <span class="text-sm text-gray-600">Pemberi Kerja</span>
+            <span class="text-sm text-gray-600">{{ auth()->user()?->nama ?? 'Pemberi Kerja' }}</span>
         </header>
 
         <div class="flex min-h-[calc(100vh-4rem)]">

@@ -45,7 +45,7 @@ class JobVacancyPolicy
      */
     private function ownsVacancy(User $user, JobVacancy $jobVacancy): Response
     {
-        return $user->isEmployer() && $jobVacancy->user_id === $user->id
+        return $user->isEmployer() && (int) $jobVacancy->id_penyedia === (int) $user->id_pengguna
             ? Response::allow()
             : Response::denyAsNotFound();
     }

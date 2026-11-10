@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Employer;
 
-use App\Enums\VacancyCategory;
-use App\Enums\VacancyDuration;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\JobVacancyRequest;
 use App\Models\JobVacancy;
+use App\Models\KategoriPekerjaan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,9 +21,8 @@ class JobVacancyController extends Controller
         Gate::authorize('viewAny', JobVacancy::class);
 
         return view('employer.vacancies.index', [
-            'vacancies' => $request->user()->jobVacancies()->latest()->get(),
-            'categories' => VacancyCategory::cases(),
-            'durations' => VacancyDuration::cases(),
+            'vacancies' => $request->user()->jobVacancies()->with(['kategori', 'lamaran'])->latest('dibuat_pada')->get(),
+            'categories' => KategoriPekerjaan::where('status_kategori', 'aktif')->get(),
         ]);
     }
 
@@ -35,7 +33,11 @@ class JobVacancyController extends Controller
     {
         Gate::authorize('create', JobVacancy::class);
 
-        $request->user()->jobVacancies()->create($request->validated());
+        $request->user()->jobVacancies()->create([
+            ...$request->validated(),
+            'upah' => 0,
+            'status_lowongan' => 'aktif',
+        ]);
 
         return to_route('employer.vacancies.index')
             ->with('status', 'Lowongan berhasil dipasang.');
@@ -50,8 +52,7 @@ class JobVacancyController extends Controller
 
         return view('employer.vacancies.edit', [
             'vacancy' => $vacancy,
-            'categories' => VacancyCategory::cases(),
-            'durations' => VacancyDuration::cases(),
+            'categories' => KategoriPekerjaan::where('status_kategori', 'aktif')->get(),
         ]);
     }
 

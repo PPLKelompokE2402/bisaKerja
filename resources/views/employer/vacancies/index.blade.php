@@ -25,8 +25,8 @@
                     @forelse ($vacancies as $vacancy)
                         <tr>
                             <td class="px-5 py-4">
-                                <p class="font-semibold text-gray-900">{{ $vacancy->title }}</p>
-                                <p class="mt-1 text-xs text-gray-500">{{ $vacancy->location }}</p>
+                                <p class="font-semibold text-gray-900">{{ $vacancy->judul }}</p>
+                                <p class="mt-1 text-xs text-gray-500">{{ $vacancy->lokasi }}</p>
                             </td>
                             <td class="px-5 py-4 text-gray-800">{{ $vacancy->applicants_count }} pelamar</td>
                             <td class="px-5 py-4">
@@ -35,7 +35,7 @@
                                     'border-gray-300 bg-gray-100 text-gray-800' => $vacancy->isOpen(),
                                     'border-gray-200 bg-gray-50 text-gray-400' => ! $vacancy->isOpen(),
                                 ])>
-                                    {{ $vacancy->status->label() }}
+                                    {{ $vacancy->status_label }}
                                 </span>
                             </td>
                             <td class="px-5 py-4">
@@ -48,7 +48,7 @@
                                     <form method="POST" action="{{ route('employer.vacancies.status.update', $vacancy) }}">
                                         @csrf
                                         @method('PATCH')
-                                        <input type="hidden" name="status" value="{{ \App\Enums\VacancyStatus::Open->value }}">
+                                        <input type="hidden" name="status" value="aktif">
                                         <button type="submit"
                                             class="w-24 rounded border border-gray-300 bg-gray-100 px-2 py-1 text-xs text-gray-800 transition hover:bg-gray-200">
                                             Buka kembali
@@ -60,7 +60,7 @@
                     @empty
                         <tr>
                             <td colspan="4" class="px-5 py-10 text-center text-gray-500">
-                                Belum ada lowongan. Klik "Tambah Lowongan" untuk memasang lowongan pertamamu.
+                                Belum ada lowongan. Klik "+ Tambah Lowongan" untuk memasang lowongan pertamamu.
                             </td>
                         </tr>
                     @endforelse
@@ -83,7 +83,7 @@
             </div>
 
             <div class="max-h-[60vh] overflow-y-auto px-6 py-5">
-                <x-vacancy.form-fields :categories="$categories" :durations="$durations" />
+                <x-vacancy.form-fields :categories="$categories" />
             </div>
 
             <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
@@ -98,4 +98,3 @@
         </form>
     </dialog>
 </x-layouts.employer>
-
