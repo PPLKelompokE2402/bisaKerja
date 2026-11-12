@@ -40,11 +40,32 @@
             </div>
         @endif
 
-        <!-- Tombol Lamar Sekarang (PBI-06) -->
-        <div class="pt-4 border-t flex justify-end">
-            <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition">
-                Lamar Sekarang
-            </a>
+        <!-- Tombol Lamar Sekarang (PBI-06 / PBI-53) -->
+        <div class="pt-4 border-t flex justify-between items-center">
+            @php
+                $alreadyApplied = false;
+                if (auth()->check()) {
+                    $alreadyApplied = \App\Models\JobApplication::where('user_id', auth()->id())
+                        ->where('job_id', $job->id)
+                        ->exists();
+                }
+            @endphp
+
+            @if($alreadyApplied)
+                <div class="inline-flex items-center gap-2 text-amber-800 bg-amber-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-amber-200">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Sudah Dilamar (Menunggu Peninjauan)
+                </div>
+                <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2.5 rounded-lg transition text-sm">
+                    Lihat Status Lamaran
+                </a>
+            @else
+                <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition ml-auto">
+                    Lamar Sekarang
+                </a>
+            @endif
         </div>
     </div>
 </body>

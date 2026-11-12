@@ -21,9 +21,25 @@ class JobApplication extends Model
     protected $fillable = [
         'user_id',
         'job_id',
+        'applicant_name',
+        'date_of_birth',
+        'age',
+        'residence',
+        'skills',
         'cv_path',
         'status',
     ];
+
+    /**
+     * Tipe data casts atribut model.
+     */
+    protected function casts(): array
+    {
+        return [
+            'date_of_birth' => 'date',
+            'age' => 'integer',
+        ];
+    }
 
     /**
      * Relasi ke pelamar (User).
@@ -41,4 +57,3 @@ class JobApplication extends Model
         return $this->belongsTo(Job::class, 'job_id');
     }
 }
-
