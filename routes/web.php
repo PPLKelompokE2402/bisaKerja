@@ -6,7 +6,9 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\UseDemoEmployer;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/biodata-penyedia');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/biodata-penyedia', function () {
     return view('auth.biodata-penyedia');
@@ -34,6 +36,12 @@ Route::get('/home', function () {
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
+Route::get('/admin/verifikasi', function () {
+    return view('admin.verifikasi');
+})->name('admin.verifikasi');
+Route::get('/admin/pengguna', function () {
+    return view('admin.pengguna');
+})->name('admin.pengguna');
 Route::prefix('pemberi-kerja')
     ->name('employer.')
     ->middleware(UseDemoEmployer::class)

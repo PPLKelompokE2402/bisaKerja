@@ -32,15 +32,28 @@ Route::middleware('auth:sanctum')->group(function () {
 // });
 
 Route::middleware('role:admin')->prefix('admin')->group(function () {
-    Route::get('/pending-users', [
-        AdminVerificationController::class,
-        'pendingUsers',
-    ]);
+        Route::get('/pending-users', [
+            AdminVerificationController::class,
+            'pendingUsers',
+        ]);
 
-    Route::patch('/users/{id}/verify', [
+        Route::patch('/users/{id}/verify', [
+            AdminVerificationController::class,
+            'verifyUser',
+        ]);
+
+        Route::get('/users', [
+            AdminVerificationController::class,
+            'allUsers',
+        ]);
+        Route::patch('/users/{id}/status', [
+            AdminVerificationController::class,
+            'updateUserStatus',
+        ]);
+        Route::get('/users/{id}', [
         AdminVerificationController::class,
-        'verifyUser',
-    ]);
-});
+        'showUser',
+        ]);
+    });
 });
 
