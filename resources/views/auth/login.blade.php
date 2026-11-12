@@ -246,7 +246,11 @@
             alert(result.message);
 
             // Arahkan pengguna setelah login
-            window.location.href = '/home';
+            if (result.user.role === 'admin') {
+                window.location.href = '/admin/dashboard';
+            } else {
+                window.location.href = '/home';
+            }
 
         } catch (error) {
             console.error(error);

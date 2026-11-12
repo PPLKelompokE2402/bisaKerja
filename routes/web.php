@@ -31,6 +31,9 @@ Route::get('/home', function () {
     return view('home');
 })->name('home');
 
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
 Route::prefix('pemberi-kerja')
     ->name('employer.')
     ->middleware(UseDemoEmployer::class)
