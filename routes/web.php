@@ -1,9 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Employer\JobVacancyController;
+use App\Http\Controllers\Employer\JobVacancyStatusController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Middleware\UseDemoEmployer;
+use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/biodata-penyedia');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/biodata-penyedia', function () {
     return view('auth.biodata-penyedia');
@@ -11,9 +16,7 @@ Route::get('/biodata-penyedia', function () {
 
 Route::post('/biodata-penyedia', [ProviderController::class, 'store'])
     ->name('provider.biodata.store');
-Route::get('/', function () {
-    return view('welcome');
-});
+
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
@@ -30,6 +33,26 @@ Route::get('/home', function () {
     return view('home');
 })->name('home');
 
-
 Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
 Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');
+
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
+Route::get('/admin/verifikasi', function () {
+    return view('admin.verifikasi');
+})->name('admin.verifikasi');
+Route::get('/admin/pengguna', function () {
+    return view('admin.pengguna');
+})->name('admin.pengguna');
+Route::prefix('pemberi-kerja')
+    ->name('employer.')
+    ->middleware(UseDemoEmployer::class)
+    ->group(function () {
+        Route::get('lowongan', [JobVacancyController::class, 'index'])->name('vacancies.index');
+        Route::post('lowongan', [JobVacancyController::class, 'store'])->name('vacancies.store');
+        Route::get('lowongan/{vacancy}/kelola', [JobVacancyController::class, 'edit'])->name('vacancies.edit');
+        Route::put('lowongan/{vacancy}', [JobVacancyController::class, 'update'])->name('vacancies.update');
+        Route::delete('lowongan/{vacancy}', [JobVacancyController::class, 'destroy'])->name('vacancies.destroy');
+        Route::patch('lowongan/{vacancy}/status', [JobVacancyStatusController::class, 'update'])->name('vacancies.status.update');
+    });
