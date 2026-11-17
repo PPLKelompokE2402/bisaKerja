@@ -7,7 +7,7 @@ use App\Http\Middleware\UseDemoEmployer;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('jobs.welcome');
 })->name('welcome');
 
 Route::get('/biodata-penyedia', function () {
