@@ -100,6 +100,7 @@ class AdminVerificationController extends Controller
 
         $query->where('status_akun', $request->input('status'));
     }
+    
 
     $users = $query
         ->select(
