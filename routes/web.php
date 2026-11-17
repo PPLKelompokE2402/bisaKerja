@@ -6,6 +6,8 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\UseDemoEmployer;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/lamaran-saya', 'seeker.applications-entry')->name('seeker.applications');
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');

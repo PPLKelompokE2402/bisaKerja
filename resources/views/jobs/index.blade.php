@@ -19,7 +19,7 @@
             <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl">
                 <span>Lowongan Kerja</span>
             </a>
-            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
+            <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
                 <span>Lamaran Saya</span>
             </a>
             <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">

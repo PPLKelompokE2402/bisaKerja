@@ -2,9 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\VacancyCategory;
-use App\Enums\VacancyDuration;
-use App\Enums\VacancyStatus;
 use App\Models\JobVacancy;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -22,15 +19,14 @@ class JobVacancyFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory()->employer(),
-            'title' => fake()->sentence(3),
-            'category' => fake()->randomElement(VacancyCategory::cases()),
-            'location' => fake()->streetAddress().', Bandung',
-            'work_date' => fake()->dateTimeBetween('+1 day', '+1 month'),
-            'duration' => fake()->randomElement(VacancyDuration::cases()),
-            'notes' => fake()->optional()->sentence(),
-            'status' => VacancyStatus::Open,
-            'applicants_count' => fake()->numberBetween(0, 10),
+            'id_penyedia' => User::factory()->employer(),
+            'id_kategori' => KategoriPekerjaanFactory::new(),
+            'judul' => fake()->sentence(3),
+            'lokasi' => fake()->streetAddress().', Bandung',
+            'waktu_pekerjaan' => fake()->dateTimeBetween('+1 day', '+1 month'),
+            'deskripsi' => fake()->sentence(),
+            'status_lowongan' => 'aktif',
+            'upah' => 70000,
         ];
     }
 
@@ -40,7 +36,7 @@ class JobVacancyFactory extends Factory
     public function closed(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => VacancyStatus::Closed,
+            'status_lowongan' => 'ditutup',
         ]);
     }
 }
