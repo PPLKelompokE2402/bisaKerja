@@ -24,3 +24,4 @@ Route::middleware(['web', EnsureJobSeekerAuthenticated::class])->group(function 
     Route::get('/jobs/{id}/apply', [JobApplicationController::class, 'create'])->name('jobs.apply');
     Route::post('/jobs/{id}/apply', [JobApplicationController::class, 'store'])->name('jobs.apply.store');
 });
+
