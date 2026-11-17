@@ -102,4 +102,12 @@ class User extends Authenticatable
             'diperbarui_pada' => 'datetime',
         ];
     }
+
+    /**
+     * Relasi ke pengajuan lamaran pekerjaan (PBI-06).
+     */
+    public function jobApplications()
+    {
+        return $this->hasMany(JobApplication::class, 'user_id');
+    }
 }
