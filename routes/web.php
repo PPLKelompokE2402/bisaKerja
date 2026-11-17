@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
-
 // Mengarahkan halaman utama (root) langsung ke daftar lowongan pekerjaan
 Route::get('/', function () {
     return redirect()->route('jobs.index');
