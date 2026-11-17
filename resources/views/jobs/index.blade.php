@@ -4,133 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pencari Kerja - bisaKerja</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            500: '#16a34a',
-                            600: '#15803d',
-                            700: '#166534',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex">
 
-    <!-- Sidebar Left -->
-    <aside class="w-64 bg-white border-r min-h-screen p-6 hidden md:block">
-        <div class="flex items-center gap-2 mb-8">
-            <span class="text-2xl font-bold text-emerald-800">bisaKerja</span>
+    <!-- Sidebar Navigasi (Fixed/Sticky di Kiri, Diam di Tempat) -->
+    <aside class="w-64 bg-white border-r h-screen p-6 hidden md:block sticky top-0 self-start">
+        <div class="flex items-center space-x-3 mb-8">
+            <div class="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">b</div>
+            <span class="text-xl font-bold text-emerald-800">bisaKerja</span>
         </div>
-        <nav class="space-y-2">
-            <a href="{{ route('jobs.index') }}" class="flex items-center gap-3 px-4 py-3 bg-emerald-50 text-emerald-700 font-semibold rounded-lg">
-                <span>Beranda</span>
+
+        <nav class="space-y-4 text-gray-600 font-medium">
+            <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl">
+                <span>Lowongan Kerja</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
                 <span>Lamaran Saya</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
                 <span>Chat</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
                 <span>Profil</span>
             </a>
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Konten Utama -->
     <main class="flex-1">
-        <!-- Top Navbar Mobile/Header -->
-        <header class="bg-white border-b px-8 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-800 md:hidden">bisaKerja</h1>
-            <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full ml-auto">Pencari Kerja</span>
-        </header>
-
         <div class="p-8 max-w-6xl mx-auto space-y-8">
             
-            <!-- Hero Search Section (Sesuai Gambar 13 Mockup) -->
-            <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-emerald-800 to-teal-900 p-8 md:p-12 text-white shadow-lg">
-                <div class="relative z-10 text-center max-w-2xl mx-auto space-y-3">
-                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Cari pekerjaan di sekitar rumah</h2>
-                    <p class="text-emerald-100 text-sm">Temukan pekerjaan harian atau freelance sesuai lokasi tempat tinggalmu</p>
+            <!-- Banner & Form Pencarian (overflow-visible biar dropdown rekomendasi gak kepotong) -->
+            <div class="relative rounded-2xl overflow-visible bg-emerald-800 text-white p-8 md:p-12 shadow-md">
+                <div class="max-w-2xl space-y-4 relative z-10">
+                    <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">Cari pekerjaan di sekitar rumah</h1>
+                    <p class="text-emerald-100 text-sm md:text-base">Temukan pekerjaan harian atau freelance sesuai lokasi tempat tinggalmu</p>
                     
-                    <!-- Form 2 Input (PBI-04 & PBI-05) -->
-                    <form action="{{ route('jobs.index') }}" method="GET" class="mt-6 flex flex-col md:flex-row gap-3 bg-white/10 p-3 rounded-xl backdrop-blur-md">
-                        <div class="flex-1">
-                            <input 
-                                type="text" 
-                                name="search" 
-                                value="{{ request('search') }}" 
-                                placeholder="Pekerjaan / Keahlian..." 
-                                class="w-full px-4 py-2.5 rounded-lg text-gray-800 bg-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            >
+                    <form action="{{ route('jobs.index') }}" method="GET" class="pt-4">
+                        <div class="bg-white p-2 rounded-2xl shadow-lg flex flex-col md:flex-row gap-2 relative">
+                            <!-- Input Pekerjaan / Keahlian -->
+                            <div class="flex-1">
+                                <input 
+                                    type="text" 
+                                    name="keyword" 
+                                    placeholder="Pekerjaan / Keahlian..." 
+                                    value="{{ request('keyword') }}"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700"
+                                >
+                            </div>
+
+                            <!-- Input Lokasi dengan Custom Live Search Dropdown -->
+                            <div class="flex-1 relative">
+                                <input 
+                                    type="text" 
+                                    id="location-input"
+                                    name="location" 
+                                    placeholder="Masukkan kota atau lokasi..." 
+                                    value="{{ request('location') }}"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700"
+                                    autocomplete="off"
+                                >
+
+                                <!-- Box Dropdown Rekomendasi Melayang (z-50) -->
+                                <div id="location-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-60 overflow-y-auto z-50">
+                                    <ul id="location-list" class="py-2 text-sm text-gray-700">
+                                        <!-- Rekomendasi diisi lewat JS -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Cari -->
+                            <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-xl transition duration-200">
+                                Cari
+                            </button>
                         </div>
-                        <div class="flex-1">
-                            <input 
-                                type="text" 
-                                name="location" 
-                                value="{{ request('location') }}" 
-                                placeholder="Masukkan kota atau lokasi..." 
-                                class="w-full px-4 py-2.5 rounded-lg text-gray-800 bg-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            >
-                        </div>
-                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition">
-                            Cari
-                        </button>
-                        @if(request('search') || request('location'))
-                            <a href="{{ route('jobs.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-4 py-2.5 rounded-lg text-sm text-center transition">
-                                Reset
-                            </a>
-                        @endif
                     </form>
+
+                    @if(request('keyword') || request('location'))
+                        <div class="pt-2">
+                            <a href="{{ route('jobs.index') }}" class="text-xs text-emerald-200 hover:text-white underline">
+                                ↻ Reset Filter Pencarian
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <!-- Job Cards Grid (3 Kolom Sesuai Mockup) -->
             <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Lowongan di sekitarmu</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    @forelse($jobs as $job)
-                        <div class="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-base mb-1">{{ $job->title }}</h4>
-                                <p class="text-gray-500 text-xs mb-3">📍 {{ $job->location }} | {{ $job->company }}</p>
-                                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ $job->description }}</p>
-                            </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Lowongan di sekitarmu</h2>
 
-                            <div>
-                                <div class="text-emerald-700 font-bold text-base mb-4">
-                                    Rp {{ number_format($job->salary_min) }}
+                @if($jobs->isEmpty())
+                    <div class="bg-white p-12 text-center rounded-2xl border text-gray-500">
+                        <p class="text-lg font-semibold">Lowongan tidak ditemukan</p>
+                        <p class="text-sm mt-1">Coba gunakan kata kunci atau lokasi lain.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($jobs as $job)
+                            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+                                <div class="space-y-2">
+                                    <h3 class="font-bold text-gray-800 text-lg leading-snug">{{ $job->title }}</h3>
+                                    <p class="text-xs text-gray-500 font-medium">
+                                        📍 {{ $job->location }} | {{ $job->company }}
+                                    </p>
+                                    <p class="text-sm text-gray-600 line-clamp-2 pt-2">
+                                        {{ $job->description }}
+                                    </p>
                                 </div>
-                                <!-- TOMBOL LIHAT DETAIL SUDAH DISAMBUNGIN KE ROUTE SHOW -->
-                                <a href="{{ route('jobs.show', $job->id) }}" class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2 rounded-lg transition">
-                                    Lihat Detail
-                                </a>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-span-3 bg-white p-8 text-center rounded-xl border">
-                            <p class="text-gray-500">Tidak ada lowongan kerja yang ditemukan.</p>
-                        </div>
-                    @endforelse
-                </div>
 
-                <!-- Pagination -->
-                <div class="mt-6">
-                    {{ $jobs->links() }}
-                </div>
+                                <div class="pt-4 border-t border-gray-100 space-y-3">
+                                    <div class="text-emerald-700 font-bold text-base">
+                                        Rp {{ number_format($job->salary_min) }} @if($job->salary_max) - Rp {{ number_format($job->salary_max) }} @endif
+                                    </div>
+                                    <a href="{{ route('jobs.show', $job->id) }}" class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
+                                        Lihat Detail
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
         </div>
     </main>
 
+    <!-- JavaScript Autocomplete Lokasi -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const locations = [
+                "Jakarta Selatan", "Jakarta Timur", "Jakarta Barat", "Jakarta Utara", "Jakarta Pusat",
+                "Bekasi", "Depok", "Tangerang", "Tangerang Selatan", "Bogor",
+                "Bandung", "Cimahi", "Cirebon", "Sukabumi", "Tasikmalaya",
+                "Semarang", "Surakarta (Solo)", "Yogyakarta", "Magelang", "Purwokerto",
+                "Surabaya", "Malang", "Sidoarjo", "Gresik", "Kediri",
+                "Medan", "Palembang", "Pekanbaru", "Bandar Lampung", "Denpasar (Bali)",
+                "Makassar", "Manado", "Banjarmasin", "Balikpapan", "Pontianak"
+            ];
+
+            const input = document.getElementById('location-input');
+            const dropdown = document.getElementById('location-dropdown');
+            const list = document.getElementById('location-list');
+
+            input.addEventListener('input', function () {
+                const query = this.value.trim().toLowerCase();
+                list.innerHTML = '';
+
+                if (query.length === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+
+                const matches = locations.filter(loc => loc.toLowerCase().includes(query));
+
+                if (matches.length > 0) {
+                    matches.forEach(loc => {
+                        const li = document.createElement('li');
+                        li.className = 'px-4 py-2.5 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer flex items-center space-x-2 transition font-medium';
+                        li.innerHTML = `<span class="text-emerald-600">📍</span> <span>${loc}</span>`;
+                        
+                        li.addEventListener('click', function () {
+                            input.value = loc;
+                            dropdown.classList.add('hidden');
+                        });
+
+                        list.appendChild(li);
+                    });
+                    dropdown.classList.remove('hidden');
+                } else {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
