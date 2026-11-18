@@ -58,9 +58,14 @@
                     </svg>
                     Sudah Dilamar (Menunggu Peninjauan)
                 </div>
-                <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2.5 rounded-lg transition text-sm">
-                    Lihat Status Lamaran
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('applications.index') }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm">
+                        Lamaran Saya
+                    </a>
+                    <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-amber-700 hover:bg-amber-800 text-white font-semibold px-4 py-2.5 rounded-lg transition text-sm">
+                        Lihat Detail Form
+                    </a>
+                </div>
             @else
                 <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition ml-auto">
                     Lamar Sekarang

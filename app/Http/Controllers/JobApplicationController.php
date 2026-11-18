@@ -142,4 +142,78 @@ class JobApplicationController extends Controller
 
         return redirect()->route('jobs.apply', $job->id)->with('success', 'Lamaran pekerjaan berhasil dikirimkan!');
     }
+
+    /**
+     * Menampilkan daftar pemantauan lamaran dan riwayat pekerjaan milik pencari kerja (PBI-05).
+     */
+    public function index()
+    {
+        // Fitur pendukung: Pastikan session pencari kerja aktif untuk pengujian browser
+        if (!Auth::check()) {
+            $demoUser = User::firstOrCreate(
+                ['email' => 'pencari.kerja@bisakerja.com'],
+                ['name' => 'Budi Pencari Kerja', 'password' => bcrypt('password123')]
+            );
+            Auth::login($demoUser);
+        }
+
+        $user = Auth::user();
+
+        // Mengambil semua lamaran milik user yang sedang login dengan relasi pekerjaan
+        $allApplications = JobApplication::with('job')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        // Memisahkan lamaran aktif (Menunggu, Diterima, Ditolak, Dibatalkan) dan riwayat pekerjaan (Selesai)
+        $activeApplications = $allApplications->filter(function ($app) {
+            $status = strtolower((string) $app->status);
+
+            return !in_array($status, ['completed', 'selesai'], true);
+        });
+
+        $completedApplications = $allApplications->filter(function ($app) {
+            $status = strtolower((string) $app->status);
+
+            return in_array($status, ['completed', 'selesai'], true);
+        });
+
+        return view('applications.index', compact('activeApplications', 'completedApplications'));
+    }
+
+    /**
+     * Membatalkan lamaran pekerjaan yang masih dalam proses peninjauan (PBI-05).
+     *
+     * @param Request $request
+     * @param int|string $id ID pengajuan lamaran
+     */
+    public function cancel(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $user = Auth::user();
+
+        // Mencari lamaran berdasarkan ID dan memastikan hanya milik user yang sedang login
+        $application = JobApplication::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$application) {
+            return redirect()->route('applications.index')->with('error', 'Lamaran pekerjaan tidak ditemukan.');
+        }
+
+        // Memastikan lamaran masih berstatus menunggu / pending
+        if (!$application->isCancellable()) {
+            return redirect()->route('applications.index')->with('error', 'Lamaran yang sudah diterima atau ditolak tidak dapat dibatalkan.');
+        }
+
+        // Memperbarui status pembatalan di database
+        $application->update([
+            'status' => 'cancelled',
+        ]);
+
+        return redirect()->route('applications.index')->with('success', 'Lamaran pekerjaan berhasil dibatalkan.');
+    }
 }

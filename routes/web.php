@@ -23,4 +23,9 @@ Route::get('/login', function () {
 Route::middleware(['web', EnsureJobSeekerAuthenticated::class])->group(function () {
     Route::get('/jobs/{id}/apply', [JobApplicationController::class, 'create'])->name('jobs.apply');
     Route::post('/jobs/{id}/apply', [JobApplicationController::class, 'store'])->name('jobs.apply.store');
+
+    // PBI-05: Pemantauan dan Pengelolaan Lamaran
+    Route::get('/applications', [JobApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/lamaran', [JobApplicationController::class, 'index'])->name('lamaran.index');
+    Route::patch('/applications/{id}/cancel', [JobApplicationController::class, 'cancel'])->name('applications.cancel');
 });
