@@ -469,103 +469,85 @@
   </div>
 
   <script>
- 
-const fotoUpload = document.getElementById('foto-upload');
-const fotoLabel = document.getElementById('foto-label');
 
-const dokumenUpload = document.getElementById('dokumen-upload');
-const dokumenLabel = document.getElementById('dokumen-label');
-
-const providerForm = document.getElementById('providerForm');
-
-// Menampilkan nama file foto
-fotoUpload.addEventListener('change', function () {
-    fotoLabel.textContent = this.files[0]
-        ? this.files[0].name
-        : 'Belum ada file dipilih';
-
-    fotoLabel.style.color = '#1b7348';
-});
-
-// Menampilkan nama file dokumen
-dokumenUpload.addEventListener('change', function () {
-    dokumenLabel.textContent = this.files[0]
-        ? this.files[0].name
-        : 'Belum ada file dipilih';
-
-    dokumenLabel.style.color = '#1b7348';
-});
-
-// Mengirim biodata ke backend
-providerForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-
+async function updateAccountStatus() {
+    const statusElement = document.getElementById('accountStatus');
     const token = sessionStorage.getItem('auth_token');
 
     if (!token) {
-        alert('Sesi login tidak ditemukan. Silakan login kembali.');
         window.location.href = '/login';
         return;
     }
 
-    const submitButton = providerForm.querySelector(
-        'button[type="submit"]'
-    );
-
-    const formData = new FormData(providerForm);
-
-    submitButton.disabled = true;
-    submitButton.textContent = 'Menyimpan...';
-
     try {
-        const response = await fetch('/api/provider/profile', {
-            method: 'POST',
+        const response = await fetch('/api/user', {
+            method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`
-            },
-            body: formData
+            }
         });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                sessionStorage.removeItem('auth_token');
+                sessionStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
+
+            throw new Error('Gagal mengambil data akun.');
+        }
 
         const result = await response.json();
 
-        if (!response.ok) {
-            if (result.errors) {
-                const messages = Object.values(result.errors)
-                    .flat()
-                    .join('\n');
+        // Mendukung respons API berbentuk { user: {...} }
+        // maupun respons yang langsung berisi data pengguna.
+        const user = result.user ?? result;
 
-                alert(messages);
-            } else {
-                alert(result.message || 'Gagal menyimpan biodata.');
-            }
-
-            return;
-        }
-
-        // Perbarui status pengguna di sessionStorage
-        const user = JSON.parse(
-            sessionStorage.getItem('user') || '{}'
-        );
-
-        user.nama = result.user.nama;
-        user.status_akun = result.user.status_akun;
-
+        // Perbarui data pengguna di sessionStorage.
         sessionStorage.setItem('user', JSON.stringify(user));
 
-        alert(result.message);
+        // Tampilkan status akun terbaru.
+        switch (user.status_akun) {
+            case 'belum_lengkap':
+                statusElement.textContent =
+                    'Silakan lengkapi biodata Anda.';
+                break;
 
-        window.location.href = '/home';
+            case 'menunggu_verifikasi':
+                statusElement.textContent =
+                    'Akun Anda sedang menunggu verifikasi Admin.';
+                break;
+
+            case 'aktif':
+                statusElement.textContent =
+                    'Akun Anda sudah terverifikasi.';
+                break;
+
+            case 'ditolak':
+                statusElement.textContent =
+                    'Verifikasi ditolak. Silakan periksa kembali biodata Anda.';
+                break;
+
+            case 'ditangguhkan':
+                statusElement.textContent =
+                    'Akun Anda sedang ditangguhkan.';
+                break;
+
+            default:
+                statusElement.textContent =
+                    'Status akun tidak diketahui.';
+        }
 
     } catch (error) {
         console.error(error);
-        alert('Terjadi kesalahan koneksi ke server.');
-
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Selesaikan pendaftaran';
+        statusElement.textContent =
+            'Gagal memeriksa status akun. Silakan muat ulang halaman.';
     }
-});
+}
+
+updateAccountStatus();
 
   </script>
 

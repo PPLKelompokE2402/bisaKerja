@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminVerificationController;
@@ -10,12 +9,6 @@ use App\Http\Controllers\ProviderController;
 Route::get('/', function () {
     return view('auth.welcome');
 });
-
-
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
 
 
 
