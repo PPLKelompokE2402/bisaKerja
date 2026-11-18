@@ -134,15 +134,18 @@
     <!-- JavaScript Autocomplete Lokasi -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const locations = [
-                "Jakarta Selatan", "Jakarta Timur", "Jakarta Barat", "Jakarta Utara", "Jakarta Pusat",
-                "Bekasi", "Depok", "Tangerang", "Tangerang Selatan", "Bogor",
-                "Bandung", "Cimahi", "Cirebon", "Sukabumi", "Tasikmalaya",
-                "Semarang", "Surakarta (Solo)", "Yogyakarta", "Magelang", "Purwokerto",
-                "Surabaya", "Malang", "Sidoarjo", "Gresik", "Kediri",
-                "Medan", "Palembang", "Pekanbaru", "Bandar Lampung", "Denpasar (Bali)",
-                "Makassar", "Manado", "Banjarmasin", "Balikpapan", "Pontianak"
-            ];
+           const locations = [
+             "Jakarta Selatan", "Jakarta Timur", "Jakarta Barat", "Jakarta Utara", "Jakarta Pusat",
+            "Bekasi", "Depok", "Tangerang", "Tangerang Selatan", "Bogor",
+            "Bandung", "Cimahi", "Kabupaten Bandung", "Cirebon", "Sukabumi", "Tasikmalaya", "Garut", "Karawang", "Purwakarta", "Subang", "Indramayu", "Sumedang",
+            "Semarang", "Surakarta (Solo)", "Yogyakarta", "Sleman", "Bantul", "Magelang", "Purwokerto", "Tegal", "Pekalongan", "Kudus", "Salatiga",
+            "Surabaya", "Malang", "Sidoarjo", "Gresik", "Kediri", "Jember", "Banyuwangi", "Mojokerto", "Madiun", "Pasuruan",
+            "Medan", "Binjai", "Palembang", "Pekanbaru", "Padang", "Bukittinggi", "Bandar Lampung", "Batam", "Jambi", "Bengkulu", "Banda Aceh",
+            "Denpasar (Bali)", "Badung (Bali)", "Gianyar", "Mataram", "Kupang",
+            "Makassar", "Manado", "Kendari", "Palu", "Gorontalo",
+            "Banjarmasin", "Banjarbaru", "Balikpapan", "Samarinda", "Pontianak", "Palangkaraya",
+            "Ambon", "Jayapura", "Sorong"
+         ];
 
             const input = document.getElementById('location-input');
             const dropdown = document.getElementById('location-dropdown');

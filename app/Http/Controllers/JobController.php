@@ -12,11 +12,11 @@ class JobController extends Controller
         $query = Job::query();
 
         // Filter PBI-04 (Judul/Perusahaan)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('company', 'like', "%{$search}%");
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('company', 'like', "%{$keyword}%");
             });
         }
 
