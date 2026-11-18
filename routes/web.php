@@ -1,14 +1,28 @@
 <?php
-
+use App\Models\JobVacancy;
 use App\Http\Controllers\Employer\JobVacancyController;
 use App\Http\Controllers\Employer\JobVacancyStatusController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\UseDemoEmployer;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JobController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $jobs = \App\Models\JobVacancy::with(['employer', 'kategori'])
+        ->where('status_lowongan', 'aktif')
+        ->latest('dibuat_pada')
+        ->take(3)
+        ->get();
+
+    return view('welcome', compact('jobs'));
 })->name('welcome');
+
+
+Route::get('/lowongan', [JobController::class, 'index'])
+    ->name('jobs.index');
+
+Route::get('/lowongan/{id}', [JobController::class, 'show'])
+    ->name('jobs.show');
 
 Route::get('/biodata-penyedia', function () {
     return view('auth.biodata-penyedia');

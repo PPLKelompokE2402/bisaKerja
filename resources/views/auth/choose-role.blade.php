@@ -170,35 +170,37 @@
             Pilih peran yang sesuai untuk melanjutkan pendaftaran.
         </p>
 
-        <div class="role-container">
+  <div class="role-container">
 
-            <div class="role-card">
-                <h3>Pencari Kerja</h3>
+    <div class="role-card">
+        <h3>Pencari Kerja</h3>
 
-                <p>
-                    Saya ingin mencari dan melamar pekerjaan
-                    harian di sekitar saya.
-                </p>
+        <p>
+            Saya ingin mencari dan melamar pekerjaan
+            harian di sekitar saya.
+        </p>
 
-                <a href="{{ route('register') }}" class="btn btn-primary">
-                    Daftar sebagai Pencari Kerja
-                </a>
-            </div>
+        <a href="{{ route('register', ['role' => 'pencari_kerja']) }}"
+           class="btn btn-primary">
+            Daftar sebagai Pencari Kerja
+        </a>
+    </div>
 
-            <div class="role-card">
-                <h3>Pemberi Kerja</h3>
+    <div class="role-card">
+        <h3>Pemberi Kerja</h3>
 
-                <p>
-                    Saya ingin memasang lowongan dan mencari
-                    orang untuk membantu pekerjaan.
-                </p>
+        <p>
+            Saya ingin memasang lowongan dan mencari
+            orang untuk membantu pekerjaan.
+        </p>
 
-                <a href="#" class="btn btn-outline">
-                    Daftar sebagai Pemberi Kerja
-                </a>
-            </div>
+        <a href="{{ route('register', ['role' => 'penyedia_pekerjaan']) }}"
+           class="btn btn-outline">
+            Daftar sebagai Pemberi Kerja
+        </a>
+    </div>
 
-        </div>
+</div>
 
         <a href="{{ url('/') }}" class="back-link">
             ← Kembali ke halaman utama

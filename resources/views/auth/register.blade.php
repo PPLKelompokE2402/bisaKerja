@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biodata Pencari Kerja - bisaKerja</title>
+    <title>Daftar Akun - bisaKerja</title>
 
     <style>
         * {
@@ -18,66 +18,50 @@
             background: #f3faf5;
             color: #285d43;
             min-height: 100vh;
-        }
-
-        .navbar {
-            height: 65px;
-            background: white;
             display: flex;
             align-items: center;
-            padding: 0 6%;
-            border-bottom: 1px solid #e8eee9;
-        }
-
-        .logo {
-            font-size: 21px;
-            font-weight: bold;
-            color: #347650;
-        }
-
-        .progress {
-            display: flex;
             justify-content: center;
-            gap: 8px;
-            padding: 20px 0;
-        }
-
-        .progress span {
-            width: 35px;
-            height: 5px;
-            border-radius: 10px;
-            background: #dce9df;
-        }
-
-        .progress span.active {
-            background: #347650;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 35px auto;
             padding: 20px;
         }
 
-        .heading {
-            text-align: center;
-            margin-bottom: 35px;
+        .register-card {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
         }
 
-        .heading h1 {
-            font-size: 25px;
+        .logo {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #347650;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 23px;
+            text-align: center;
             margin-bottom: 10px;
         }
 
-        .heading p {
+        .description {
+            text-align: center;
             font-size: 13px;
             color: #718477;
+            margin-bottom: 25px;
+            line-height: 1.5;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 35px;
+        .role-label {
+            background: #f0f8f2;
+            padding: 12px;
+            border-radius: 7px;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 22px;
         }
 
         .form-group {
@@ -91,205 +75,163 @@
             margin-bottom: 8px;
         }
 
-        input, select, textarea {
+        input {
             width: 100%;
-            padding: 11px 12px;
+            padding: 12px;
             border: 1px solid #dce8df;
             border-radius: 7px;
-            background: white;
             font-size: 13px;
-            font-family: inherit;
             outline: none;
         }
 
-        input:focus, select:focus, textarea:focus {
+        input:focus {
             border-color: #347650;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 75px;
-        }
-
-        input[type="file"] {
-            padding: 9px;
-            font-size: 12px;
-        }
-
-        .file-info {
-            font-size: 11px;
-            color: #87968b;
-            margin-top: 5px;
-        }
-
-        .submit-wrapper {
-            text-align: center;
-            margin-top: 20px;
-        }
-
         .btn-submit {
+            width: 100%;
             background: #347650;
             color: white;
             border: none;
-            padding: 13px 30px;
+            padding: 13px;
             border-radius: 7px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 8px;
         }
 
         .btn-submit:hover {
             background: #285d43;
         }
 
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #718477;
+            margin-top: 22px;
+        }
+
+        .footer a, .back-link {
+            color: #347650;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
         .back-link {
             display: block;
             text-align: center;
-            margin-top: 20px;
-            color: #718477;
+            margin-top: 18px;
             font-size: 12px;
-            text-decoration: none;
-        }
-
-        @media (max-width: 700px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .container {
-                margin-top: 15px;
-            }
         }
     </style>
 </head>
 
 <body>
 
-<header class="navbar">
+<div class="register-card">
+
     <div class="logo">bisaKerja</div>
-</header>
 
-<div class="progress">
-    <span></span>
-    <span></span>
-    <span class="active"></span>
-</div>
+    <h1>Buat Akun</h1>
+    <p class="description">
+        Daftarkan akunmu terlebih dahulu untuk mulai menggunakan bisaKerja.
+    </p>
 
-<main class="container">
-
-    <div class="heading">
-        <h1>Biodata Pencari Kerja</h1>
-        <p>Lengkapi biodata untuk melanjutkan pendaftaran.</p>
+    <div class="role-label">
+        Mendaftar sebagai:
+        <strong id="roleLabel">Memuat...</strong>
     </div>
 
-    <form id="registerForm" enctype="multipart/form-data">
+    <form id="registerForm">
 
-        <div class="form-grid">
+        <input type="hidden" id="role" name="role" value="{{ request('role') }}">
 
-            <!-- Kolom kiri: Informasi pribadi -->
-            <div>
-                <div class="form-group">
-                    <label for="nama">Nama *</label>
-                    <input type="text" id="nama" name="nama"
-                           placeholder="Masukkan nama lengkap" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email *</label>
-                    <input type="email" id="email" name="email"
-                           placeholder="Contoh: email@gmail.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="kata_sandi">Password *</label>
-                    <input type="password" id="kata_sandi" name="kata_sandi"
-                           minlength="8" placeholder="Minimal 8 karakter" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="nomor_telepon">No. HP *</label>
-                    <input type="tel" id="nomor_telepon" name="nomor_telepon"
-                           placeholder="Contoh: 081234567890">
-                </div>
-
-                <div class="form-group">
-                    <label for="alamat">Lokasi *</label>
-                    <input type="text" id="alamat" name="alamat"
-                           placeholder="Masukkan alamat/lokasi" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="jenis_kelamin">Jenis Kelamin *</label>
-                    <select id="jenis_kelamin" name="jenis_kelamin" required>
-                        <option value="">Pilih jenis kelamin</option>
-                        <option value="laki-laki">Laki-laki</option>
-                        <option value="perempuan">Perempuan</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="deskripsi_diri">Deskripsi Diri *</label>
-                    <textarea id="deskripsi_diri" name="deskripsi_diri"
-                              placeholder="Ceritakan singkat tentang dirimu"
-                              required></textarea>
-                </div>
-            </div>
-
-            <!-- Kolom kanan: Profil dan pengalaman -->
-            <div>
-                <div class="form-group">
-                    <label for="foto_profil">Foto Profil *</label>
-                    <input type="file" id="foto_profil" name="foto_profil"
-                           accept=".jpg,.jpeg,.png" required>
-                    <p class="file-info">JPG/PNG, maksimal 2 MB.</p>
-                </div>
-
-                <div class="form-group">
-                    <label for="keahlian">Keahlian *</label>
-                    <textarea id="keahlian" name="keahlian"
-                              placeholder="Contoh: menyapu, mengepel, membersihkan rumah"
-                              required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="pengalaman_kerja">Pengalaman Kerja *</label>
-                    <textarea id="pengalaman_kerja" name="pengalaman_kerja"
-                              placeholder="Tuliskan pengalaman kerja jika ada"
-                              required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="cv">CV *</label>
-                    <input type="file" id="cv" name="cv"
-                           accept=".pdf" required>
-                    <p class="file-info">Format PDF, maksimal 5 MB.</p>
-                </div>
-            </div>
-
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Contoh: email@gmail.com"
+                required
+            >
         </div>
 
-        <div class="submit-wrapper">
-            <button type="submit" class="btn-submit">
-                Selesaikan Pendaftaran
-            </button>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Buat username"
+                maxlength="50"
+                required
+            >
         </div>
+
+        <div class="form-group">
+            <label for="kata_sandi">Password</label>
+            <input
+                type="password"
+                id="kata_sandi"
+                name="kata_sandi"
+                placeholder="Minimal 8 karakter"
+                minlength="8"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn-submit">
+            Daftar Sekarang
+        </button>
 
     </form>
+
+    <div class="footer">
+        Sudah memiliki akun?
+        <a href="{{ route('login') }}">Masuk</a>
+    </div>
 
     <a href="{{ route('register.role') }}" class="back-link">
         ← Kembali memilih role
     </a>
 
-</main>
+</div>
 
 <script>
     const registerForm = document.getElementById('registerForm');
+    const roleInput = document.getElementById('role');
+    const roleLabel = document.getElementById('roleLabel');
 
-    registerForm.addEventListener('submit', async function (event) {
+    const roleNames = {
+        pencari_kerja: 'Pencari Kerja',
+        penyedia_pekerjaan: 'Penyedia Pekerjaan'
+    };
+
+    const selectedRole = roleInput.value;
+
+    if (!roleNames[selectedRole]) {
+        window.location.href = "{{ route('register.role') }}";
+    } else {
+        roleLabel.textContent = roleNames[selectedRole];
+    }
+
+    registerForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const submitButton = registerForm.querySelector('button[type="submit"]');
+
+        if (!roleNames[roleInput.value]) {
+            alert('Silakan pilih role terlebih dahulu.');
+            return;
+        }
+
         const formData = new FormData(registerForm);
 
         submitButton.disabled = true;
@@ -314,15 +256,15 @@
 
                     alert(messages);
                 } else {
-                    alert(result.message || 'Registrasi gagal.');
+                    alert(result.message || 'Pendaftaran gagal.');
                 }
 
                 return;
             }
 
-            alert(result.message);
+            alert(result.message || 'Akun berhasil dibuat. Silakan masuk.');
 
-            window.location.href = '/login';
+            window.location.href = "{{ route('login') }}";
 
         } catch (error) {
             alert('Terjadi kesalahan koneksi ke server.');
@@ -330,9 +272,10 @@
 
         } finally {
             submitButton.disabled = false;
-            submitButton.textContent = 'Selesaikan Pendaftaran';
+            submitButton.textContent = 'Daftar Sekarang';
         }
     });
 </script>
+
 </body>
 </html>
