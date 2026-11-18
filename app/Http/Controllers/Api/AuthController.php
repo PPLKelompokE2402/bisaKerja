@@ -61,9 +61,8 @@ class AuthController extends Controller
         }
 
         if (
-            $user->status_akun === 'ditangguhkan' ||
-            $user->status_akun === 'ditolak'
-        ) {
+            $user->status_akun === 'ditangguhkan' ) 
+            {
             return response()->json([
                 'message' => 'Akun Anda tidak dapat digunakan. Silakan hubungi Admin.',
                 'status_akun' => $user->status_akun,

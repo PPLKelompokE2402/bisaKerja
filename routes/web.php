@@ -1,6 +1,6 @@
 
 <?php
-
+use Illuminate\Http\Request;
 use App\Models\JobVacancy;
 use App\Http\Controllers\Employer\JobVacancyController;
 use App\Http\Controllers\Employer\JobVacancyStatusController;
@@ -10,6 +10,42 @@ use App\Http\Controllers\JobApplicationController;
 use App\Http\Middleware\UseDemoEmployer;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
+Route::post('/auth/session', function (Request $request) {
+    $validated = $request->validate([
+        'token' => ['required', 'string'],
+    ]);
+
+    $accessToken = PersonalAccessToken::findToken($validated['token']);
+
+    if (
+        ! $accessToken ||
+        ! ($accessToken->tokenable instanceof User)
+    ) {
+        return response()->json([
+            'message' => 'Token autentikasi tidak valid.',
+        ], 401);
+    }
+
+    $user = $accessToken->tokenable;
+
+    if ($user->status_akun === 'ditangguhkan') {
+        return response()->json([
+            'message' => 'Akun Anda sedang ditangguhkan.',
+        ], 403);
+    }
+
+    Auth::guard('web')->login($user);
+
+    $request->session()->regenerate();
+
+    return response()->json([
+        'message' => 'Session berhasil dibuat.',
+    ]);
+});
 
 // Landing page
 Route::get('/', function () {
@@ -80,7 +116,7 @@ Route::get('/admin/pengguna', function () {
 // Pengelolaan lowongan oleh pemberi kerja
 Route::prefix('pemberi-kerja')
     ->name('employer.')
-    ->middleware(UseDemoEmployer::class)
+    ->middleware('auth')
     ->group(function () {
         Route::get('lowongan', [JobVacancyController::class, 'index'])
             ->name('vacancies.index');
