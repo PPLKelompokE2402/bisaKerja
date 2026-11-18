@@ -61,13 +61,37 @@
             border-radius: 20px;
             font-size: 13px;
         }
+ .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-btn {
+    background: #347650;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.profile-btn:hover {
+    background: #285d43;
+}
     </style>
 </head>
 
 <body>
 
-<header>
+<header class="navbar">
     <div class="logo">bisaKerja</div>
+
+    <a href="{{ route('provider.biodata') }}" class="profile-btn" id="profileButton">
+        Profil
+    </a>
 </header>
 
 <main>

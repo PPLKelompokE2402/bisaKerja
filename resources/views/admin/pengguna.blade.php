@@ -37,6 +37,7 @@
         padding: 18px 20px;
         border-bottom: 1px solid #edf1ee;
     }
+    
 
     .filter-container input,
     .filter-container select {
