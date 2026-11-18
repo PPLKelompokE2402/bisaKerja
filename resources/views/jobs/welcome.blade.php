@@ -416,7 +416,7 @@
 
         <nav class="nav-menu">
             <a href="{{ route('welcome') }}" class="active">Beranda</a>
-            <a href="{{ route('jobs.index') }}">Cari Lowongan</a>
+            <!-- <a href="{{ route('jobs.index') }}">Cari Lowongan</a> -->
             <a href="{{ route('login') }}">Pasang Pekerjaan</a>
         </nav>
 
@@ -444,7 +444,7 @@
                 Temukan pekerjaan harian yang sesuai dengan kebutuhan dan keahlianmu.
             </p>
 
-            <form action="{{ route('jobs.index') }}" method="GET" class="search-form">
+            <form action="{{ route('register.role') }}" method="GET" class="search-form">
 
                 <div class="search-group">
                     <label>Nama pekerjaan</label>

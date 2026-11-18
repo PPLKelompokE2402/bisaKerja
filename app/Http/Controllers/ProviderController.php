@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,11 +9,10 @@ class ProviderController extends Controller
 {
     public function store(Request $request)
     {
-        // Ambil pengguna yang sedang login melalui Sanctum
+        // Ambil pengguna yang login melalui Sanctum
         $user = $request->user();
 
-        // Pastikan hanya penyedia pekerjaan yang dapat mengakses
-        if ($user->role !== 'penyedia_pekerjaan') {
+        if (!$user || $user->role !== 'penyedia_pekerjaan') {
             return response()->json([
                 'message' => 'Akses hanya untuk penyedia pekerjaan.'
             ], 403);
@@ -26,48 +24,60 @@ class ProviderController extends Controller
             ], 403);
         }
 
-        // Validasi biodata
+        // Validasi biodata dan file
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'nomor_telepon' => 'required|string|max:20',
-            'alamat' => 'required|string|max:255',
-            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
-            'deskripsi_diri' => 'nullable|string|max:1000',
+            'nama' => ['required', 'string', 'max:255'],
+            'nomor_telepon' => ['required', 'string', 'max:20'],
+            'alamat' => ['required', 'string', 'max:255'],
+            'jenis_kelamin' => ['nullable', 'in:Laki-laki,Perempuan'],
+            'deskripsi_diri' => ['nullable', 'string', 'max:1000'],
 
-            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto_profil' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048',
+            ],
 
-            'jenis_pemberi' => 'required|in:Individu,Rumah tangga,Usaha/UMKM',
+            'jenis_pemberi' => [
+                'required',
+                'in:Individu,Rumah tangga,Usaha/UMKM',
+            ],
 
-            'nama_usaha' => 'required_if:jenis_pemberi,Usaha/UMKM|nullable|string|max:255',
+            'nama_usaha' => [
+                'required_if:jenis_pemberi,Usaha/UMKM',
+                'nullable',
+                'string',
+                'max:255',
+            ],
 
-            'dokumen_verifikasi' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            // Dokumen wajib jika pengguna belum memiliki dokumen sebelumnya
+            'dokumen_verifikasi' => [
+                $user->dokumen_verifikasi ? 'nullable' : 'required',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:5120',
+            ],
         ]);
 
-        // Simpan foto profil
+        $oldFoto = $user->foto_profil;
+        $oldDokumen = $user->dokumen_verifikasi;
+
+        // Simpan foto baru jika ada
         if ($request->hasFile('foto_profil')) {
-
-            if ($user->foto_profil) {
-                Storage::disk('public')->delete($user->foto_profil);
-            }
-
             $validated['foto_profil'] = $request
                 ->file('foto_profil')
                 ->store('foto-penyedia', 'public');
         }
 
-        // Simpan dokumen verifikasi
+        // Simpan dokumen baru jika ada
         if ($request->hasFile('dokumen_verifikasi')) {
-
-            if ($user->dokumen_verifikasi) {
-                Storage::disk('public')->delete($user->dokumen_verifikasi);
-            }
-
             $validated['dokumen_verifikasi'] = $request
                 ->file('dokumen_verifikasi')
                 ->store('dokumen-penyedia', 'public');
         }
 
-        // Simpan biodata ke akun pengguna yang sedang login
+        // Simpan biodata
         $user->fill([
             'nama' => $validated['nama'],
             'nomor_telepon' => $validated['nomor_telepon'],
@@ -76,12 +86,45 @@ class ProviderController extends Controller
             'deskripsi_diri' => $validated['deskripsi_diri'] ?? null,
             'jenis_pemberi' => $validated['jenis_pemberi'],
             'nama_usaha' => $validated['nama_usaha'] ?? null,
-            'foto_profil' => $validated['foto_profil'] ?? $user->foto_profil,
-            'dokumen_verifikasi' => $validated['dokumen_verifikasi'],
+
+            'foto_profil' => $validated['foto_profil']
+                ?? $oldFoto,
+
+            'dokumen_verifikasi' => $validated['dokumen_verifikasi']
+                ?? $oldDokumen,
+
             'status_akun' => 'menunggu_verifikasi',
         ]);
 
-        $user->save();
+        try {
+            $user->save();
+        } catch (\Throwable $error) {
+            // Hapus file baru jika penyimpanan database gagal
+            if (isset($validated['foto_profil']) &&
+                $validated['foto_profil'] !== $oldFoto) {
+                Storage::disk('public')->delete($validated['foto_profil']);
+            }
+
+            if (isset($validated['dokumen_verifikasi']) &&
+                $validated['dokumen_verifikasi'] !== $oldDokumen) {
+                Storage::disk('public')->delete($validated['dokumen_verifikasi']);
+            }
+
+            throw $error;
+        }
+
+        // Hapus file lama setelah data baru berhasil disimpan
+        if (isset($validated['foto_profil']) &&
+            $oldFoto &&
+            $oldFoto !== $validated['foto_profil']) {
+            Storage::disk('public')->delete($oldFoto);
+        }
+
+        if (isset($validated['dokumen_verifikasi']) &&
+            $oldDokumen &&
+            $oldDokumen !== $validated['dokumen_verifikasi']) {
+            Storage::disk('public')->delete($oldDokumen);
+        }
 
         return response()->json([
             'message' => 'Biodata berhasil disimpan. Akun Anda sedang menunggu verifikasi Admin.',
@@ -90,7 +133,9 @@ class ProviderController extends Controller
                 'nama' => $user->nama,
                 'role' => $user->role,
                 'status_akun' => $user->status_akun,
+                'foto_profil' => $user->foto_profil,
+                'dokumen_verifikasi' => $user->dokumen_verifikasi,
             ],
-        ], 200);
+        ]);
     }
 }

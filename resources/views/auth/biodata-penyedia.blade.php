@@ -469,87 +469,135 @@
   </div>
 
   <script>
+    const providerForm = document.getElementById('providerForm');
 
-async function updateAccountStatus() {
-    const statusElement = document.getElementById('accountStatus');
+    const fotoInput = document.getElementById('foto-upload');
+    const fotoLabel = document.getElementById('foto-label');
+
+    const dokumenInput = document.getElementById('dokumen-upload');
+    const dokumenLabel = document.getElementById('dokumen-label');
+
+    const submitButton = providerForm.querySelector(
+        'button[type="submit"]'
+    );
+
     const token = sessionStorage.getItem('auth_token');
 
+    // Pastikan pengguna sudah login
     if (!token) {
         window.location.href = '/login';
-        return;
     }
 
-    try {
-        const response = await fetch('/api/user', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
+    // Tampilkan nama foto setelah dipilih
+    fotoInput.addEventListener('change', function () {
+        const file = this.files[0];
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                sessionStorage.removeItem('auth_token');
-                sessionStorage.removeItem('user');
-                window.location.href = '/login';
+        if (!file) {
+            fotoLabel.textContent = 'Belum ada file dipilih';
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 2 MB.');
+            this.value = '';
+            fotoLabel.textContent = 'Belum ada file dipilih';
+            return;
+        }
+
+        fotoLabel.textContent = file.name;
+    });
+
+    // Tampilkan nama dokumen setelah dipilih
+    dokumenInput.addEventListener('change', function () {
+        const file = this.files[0];
+
+        if (!file) {
+            dokumenLabel.textContent = 'Belum ada file dipilih';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran dokumen maksimal 5 MB.');
+            this.value = '';
+            dokumenLabel.textContent = 'Belum ada file dipilih';
+            return;
+        }
+
+        dokumenLabel.textContent = file.name;
+    });
+
+    // Kirim biodata dan file ke backend
+    providerForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        if (!token) {
+            alert('Sesi login tidak ditemukan. Silakan login kembali.');
+            window.location.href = '/login';
+            return;
+        }
+
+        const formData = new FormData(providerForm);
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Menyimpan...';
+
+        try {
+            const response = await fetch('/api/provider/profile', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                if (result.errors) {
+                    const messages = Object.values(result.errors)
+                        .flat()
+                        .join('\n');
+
+                    alert(messages);
+                } else {
+                    alert(result.message || 'Gagal menyimpan biodata.');
+                }
+
                 return;
             }
 
-            throw new Error('Gagal mengambil data akun.');
+            // Perbarui data pengguna di sessionStorage
+            const oldUser = JSON.parse(
+                sessionStorage.getItem('user') || '{}'
+            );
+
+            const updatedUser = {
+                ...oldUser,
+                ...result.user
+            };
+
+            sessionStorage.setItem(
+                'user',
+                JSON.stringify(updatedUser)
+            );
+
+            alert(result.message);
+
+            // Kembali ke halaman utama setelah berhasil
+            window.location.href = '/home';
+
+        } catch (error) {
+            console.error('Error upload biodata:', error);
+            alert('Terjadi kesalahan saat mengirim data. Silakan coba lagi.');
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Selesaikan Pendaftaran';
         }
+    });
+</script>
 
-        const result = await response.json();
-
-        // Mendukung respons API berbentuk { user: {...} }
-        // maupun respons yang langsung berisi data pengguna.
-        const user = result.user ?? result;
-
-        // Perbarui data pengguna di sessionStorage.
-        sessionStorage.setItem('user', JSON.stringify(user));
-
-        // Tampilkan status akun terbaru.
-        switch (user.status_akun) {
-            case 'belum_lengkap':
-                statusElement.textContent =
-                    'Silakan lengkapi biodata Anda.';
-                break;
-
-            case 'menunggu_verifikasi':
-                statusElement.textContent =
-                    'Akun Anda sedang menunggu verifikasi Admin.';
-                break;
-
-            case 'aktif':
-                statusElement.textContent =
-                    'Akun Anda sudah terverifikasi.';
-                break;
-
-            case 'ditolak':
-                statusElement.textContent =
-                    'Verifikasi ditolak. Silakan periksa kembali biodata Anda.';
-                break;
-
-            case 'ditangguhkan':
-                statusElement.textContent =
-                    'Akun Anda sedang ditangguhkan.';
-                break;
-
-            default:
-                statusElement.textContent =
-                    'Status akun tidak diketahui.';
-        }
-
-    } catch (error) {
-        console.error(error);
-        statusElement.textContent =
-            'Gagal memeriksa status akun. Silakan muat ulang halaman.';
-    }
-}
-
-updateAccountStatus();
-
-  </script>
 
 </body>
 </html>

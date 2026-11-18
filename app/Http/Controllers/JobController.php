@@ -1,39 +1,58 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\JobVacancy;
 use App\Models\Job;
 use Illuminate\Http\Request;
 
 class JobController extends Controller
 {
-    public function index(Request $request)
+  public function index(Request $request)
     {
-        $query = Job::query();
+        $query = JobVacancy::with(['employer', 'kategori'])
+            ->where('status_lowongan', 'aktif')
+            ->whereHas('employer', function ($q) {
+                $q->where('status_akun', 'aktif')
+                  ->where('role', 'penyedia_pekerjaan');
+            });
 
-        // Filter PBI-04 (Judul/Perusahaan)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('company', 'like', "%{$search}%");
+        // Pencarian berdasarkan judul pekerjaan
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where('judul', 'like', "%{$keyword}%")
+                  ->orWhereHas('employer', function ($employerQuery) use ($keyword) {
+                      $employerQuery->where('nama', 'like', "%{$keyword}%");
+                  });
             });
         }
 
-        // Filter PBI-05 (Lokasi)
+        // Filter berdasarkan lokasi
         if ($request->filled('location')) {
-            $query->where('location', 'like', "%{$request->location}%");
+            $location = $request->location;
+
+            $query->where('lokasi', 'like', "%{$location}%");
         }
 
-        $jobs = $query->latest()->paginate(9);
+        $jobs = $query->latest('dibuat_pada')->paginate(9)->withQueryString();
 
         return view('jobs.index', compact('jobs'));
     }
 
-    // Fungsi Detail Lowongan (Menampilkan halaman show.blade.php)
+    /**
+     * Menampilkan detail lowongan.
+     */
     public function show($id)
     {
-        $job = Job::findOrFail($id);
+        $job = JobVacancy::with(['employer', 'kategori'])
+            ->where('status_lowongan', 'aktif')
+            ->whereHas('employer', function ($q) {
+                $q->where('status_akun', 'aktif')
+                  ->where('role', 'penyedia_pekerjaan');
+            })
+            ->findOrFail($id);
+
         return view('jobs.show', compact('job'));
     }
 }

@@ -31,16 +31,22 @@ class JobVacancyController extends Controller
      */
     public function store(JobVacancyRequest $request): RedirectResponse
     {
-        Gate::authorize('create', JobVacancy::class);
-
-        $request->user()->jobVacancies()->create([
-            ...$request->validated(),
-            'upah' => 0,
-            'status_lowongan' => 'aktif',
-        ]);
-
+     // Hanya akun yang sudah diverifikasi Admin
+    // yang boleh membuat lowongan.
+    if ($request->user()->status_akun !== 'aktif') {
         return to_route('employer.vacancies.index')
-            ->with('status', 'Lowongan berhasil dipasang.');
+            ->with('error', 'Akun Anda belum terverifikasi Admin. Anda belum dapat membuat lowongan pekerjaan.');
+    }
+
+    Gate::authorize('create', JobVacancy::class);
+
+    $request->user()->jobVacancies()->create([
+        ...$request->validated(),
+        'status_lowongan' => 'aktif',
+    ]);
+
+    return to_route('employer.vacancies.index')
+        ->with('status', 'Lowongan berhasil dipasang.');
     }
 
     /**

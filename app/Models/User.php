@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Lamaran;
 
 class User extends Authenticatable
 {
@@ -88,6 +89,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(JobVacancy::class, 'id_penyedia', 'id_pengguna');
     }
+
+    public function lamaranSaya(): HasMany
+    {
+    return $this->hasMany(
+        Lamaran::class,
+        'id_pencari',
+        'id_pengguna'
+    );
+}
 
     /**
      * Determine whether the user is an employer (penyedia pekerjaan).

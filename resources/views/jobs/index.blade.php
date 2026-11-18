@@ -102,28 +102,46 @@
                     </div>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($jobs as $job)
-                            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-                                <div class="space-y-2">
-                                    <h3 class="font-bold text-gray-800 text-lg leading-snug">{{ $job->title }}</h3>
-                                    <p class="text-xs text-gray-500 font-medium">
-                                        📍 {{ $job->location }} | {{ $job->company }}
-                                    </p>
-                                    <p class="text-sm text-gray-600 line-clamp-2 pt-2">
-                                        {{ $job->description }}
-                                    </p>
-                                </div>
+                        
+@foreach($jobs as $job)
+    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
 
-                                <div class="pt-4 border-t border-gray-100 space-y-3">
-                                    <div class="text-emerald-700 font-bold text-base">
-                                        Rp {{ number_format($job->salary_min) }} @if($job->salary_max) - Rp {{ number_format($job->salary_max) }} @endif
-                                    </div>
-                                    <a href="{{ route('jobs.show', $job->id) }}" class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
-                                        Lihat Detail
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
+        <div class="space-y-2">
+            <h3 class="font-bold text-gray-800 text-lg leading-snug">
+                {{ $job->judul }}
+            </h3>
+
+            <p class="text-xs text-gray-500 font-medium">
+                📍 {{ $job->lokasi }}
+                @if($job->employer)
+                    | {{ $job->employer->nama }}
+                @endif
+            </p>
+
+            @if($job->kategori)
+                <p class="text-xs text-emerald-700 font-semibold">
+                    {{ $job->kategori->nama_kategori }}
+                </p>
+            @endif
+
+            <p class="text-sm text-gray-600 line-clamp-2 pt-2">
+                {{ $job->deskripsi }}
+            </p>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 space-y-3">
+            <div class="text-emerald-700 font-bold text-base">
+                Rp {{ number_format((float) $job->upah, 0, ',', '.') }}
+            </div>
+
+            <a href="{{ route('jobs.show', $job->id_lowongan) }}"
+                class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
+                Lihat Detail
+            </a>
+        </div>
+    </div>
+@endforeach
+
                     </div>
                 @endif
             </div>
