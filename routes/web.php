@@ -11,7 +11,10 @@ use App\Http\Middleware\UseDemoEmployer;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/lamaran-saya', 'seeker.applications-entry')->name('seeker.applications');
+
 // Landing page
+
 Route::get('/', function () {
     $jobs = JobVacancy::with(['employer', 'kategori'])
         ->where('status_lowongan', 'aktif')
@@ -64,7 +67,12 @@ Route::get('/home', function () {
     return redirect()->route('employer.vacancies.index');
 })->name('home');
 
+
+Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
+Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');
+
 // Halaman Admin
+
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
