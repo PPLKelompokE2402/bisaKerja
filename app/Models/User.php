@@ -24,6 +24,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nama',
+        'username',
         'email',
         'kata_sandi',
         'nomor_telepon',
@@ -36,6 +37,9 @@ class User extends Authenticatable
         'foto_profil',
         'keahlian',
         'pengalaman_kerja',
+        'jenis_pemberi',
+        'nama_usaha',
+        'dokumen_verifikasi',
     ];
 
     protected $hidden = [

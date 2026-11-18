@@ -156,14 +156,13 @@
         <form id="loginForm">
 
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="login">Email atau Username</label>
                 <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="Masukkan email Anda"
-                    required
-                >
+                    type="text"
+                    id="login"
+                    name="login"
+                    placeholder="Masukkan email atau username"
+                    required >
             </div>
 
             <div class="form-group">
@@ -204,7 +203,7 @@
         const submitButton = loginForm.querySelector('button[type="submit"]');
 
         const formData = {
-            email: document.getElementById('email').value,
+            login: document.getElementById('login').value,
             kata_sandi: document.getElementById('kata_sandi').value
         };
 
@@ -246,8 +245,8 @@
             alert(result.message);
 
             // Arahkan pengguna setelah login
-            if (result.user.role === 'admin') {
-                window.location.href = '/admin/dashboard';
+         if (result.user.role === 'admin') {
+                 window.location.href = '/admin/dashboard';
             } else {
                 window.location.href = '/home';
             }
