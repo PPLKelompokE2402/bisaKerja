@@ -36,6 +36,7 @@
         border-radius: 10px;
         overflow: hidden;
     }
+    
 
     .table-header {
         padding: 20px;

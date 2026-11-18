@@ -21,5 +21,6 @@ class AdminSeeder extends Seeder
                 'status_akun' => 'aktif',
             ]
         );
+        
     }
 }

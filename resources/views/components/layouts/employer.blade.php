@@ -42,7 +42,7 @@
                         </a>
                     @endif
                     <span class="cursor-not-allowed rounded-lg px-3 py-2 text-gray-700" title="Segera hadir">Chat</span>
-                    <span class="cursor-not-allowed rounded-lg px-3 py-2 text-gray-700" title="Segera hadir">Profil</span>
+                    <a href="{{ route('provider.biodata') }}" class="rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100">Profil</a>
                 </nav>
             </aside>
 

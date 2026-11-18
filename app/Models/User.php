@@ -24,6 +24,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nama',
+        'username',
         'email',
         'kata_sandi',
         'nomor_telepon',
@@ -36,6 +37,9 @@ class User extends Authenticatable
         'foto_profil',
         'keahlian',
         'pengalaman_kerja',
+        'jenis_pemberi',
+        'nama_usaha',
+        'dokumen_verifikasi',
     ];
 
     protected $hidden = [
@@ -101,5 +105,13 @@ class User extends Authenticatable
             'dibuat_pada' => 'datetime',
             'diperbarui_pada' => 'datetime',
         ];
+    }
+
+    /**
+     * Relasi ke pengajuan lamaran pekerjaan (PBI-06).
+     */
+    public function jobApplications()
+    {
+        return $this->hasMany(JobApplication::class, 'user_id');
     }
 }

@@ -14,16 +14,21 @@
     }
 
     body {
-      background-color: #f3f9f4;
-      color: #333;
-      padding-bottom: 60px;
-    }
+    background-color: #e9f0eb;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+}
 
-    header {
-      background-color: #ffffff;
-      padding: 20px 40px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+  header {
+    background-color: #ffffff;
+    padding: 0 0 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e8eee9;
+}
 
     .brand {
       color: #1b7348;
@@ -31,11 +36,17 @@
       font-weight: 700;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 0 20px;
-    }
+   .container {
+    width: 100%;
+    max-width: 1000px;
+    max-height: 92vh;
+    overflow-y: auto;
+    margin: auto;
+    padding: 30px 40px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
 
     .steps-indicator {
       display: flex;
@@ -219,19 +230,50 @@
     }
 
     @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
+    body {
+        padding: 10px;
+        align-items: flex-start;
     }
+
+    .container {
+        max-height: 96vh;
+        padding: 22px 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.btn-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    background-color: #e9f0eb;
+    color: #347650;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-back:hover {
+    background-color: #d8e8dc;
+}
   </style>
 </head>
 <body>
 
+
+
+  <div class="container">
+  <a href="{{ route('home') }}" class="btn-back">
+    ← Kembali ke Beranda
+  </a>
   <header>
     <div class="brand">bisaKerja</div>
   </header>
-
-  <div class="container">
 
     <div class="steps-indicator">
       <div class="step-bar"></div>
@@ -240,8 +282,8 @@
     </div>
 
     <div class="top-meta">
-      <a href="#" class="back-link">Kembali ke pilihan peran</a>
-      <div>* Wajib diisi; lainnya opsional</div>
+      <!-- <a href="#" class="back-link">Kembali ke pilihan peran</a> -->
+      <!-- <div>* Wajib diisi; lainnya opsional</div> -->
     </div>
 
     <div class="title-section">
@@ -249,124 +291,264 @@
       <p>Lengkapi biodata untuk melanjutkan pendaftaran.</p>
     </div>
 
-    <form action="#" method="POST">
-      <div class="form-grid">
+   <form id="providerForm" enctype="multipart/form-data">
 
+    <div class="form-grid">
+
+        <!-- Kolom kiri: Informasi pribadi -->
         <div class="left-col" style="display: flex; flex-direction: column; gap: 20px;">
-          
-          <div class="form-group">
-            <label for="nama">Nama*</label>
-            <input type="text" id="nama" class="form-control" placeholder="Masukkan nama lengkap" required>
-          </div>
 
-          <div class="form-group">
-            <label for="nohp">No. HP*</label>
-            <input type="tel" id="nohp" class="form-control" placeholder="Contoh: 081234567890" required>
-          </div>
+            <div class="form-group">
+                <label for="nama">Nama Lengkap *</label>
+                <input
+                    type="text"
+                    id="nama"
+                    name="nama"
+                    class="form-control"
+                    placeholder="Masukkan nama lengkap"
+                    required
+                >
+            </div>
 
-          <div class="form-group">
-            <label for="lokasi">Lokasi pekerjaan*</label>
-            <input type="text" id="lokasi" class="form-control" placeholder="Kelurahan/Kecamatan" required>
-          </div>
+            <div class="form-group">
+                <label for="nohp">No. HP *</label>
+                <input
+                    type="tel"
+                    id="nohp"
+                    name="nomor_telepon"
+                    class="form-control"
+                    placeholder="Contoh: 081234567890"
+                    required
+                >
+            </div>
 
-          <div class="form-group">
-            <label for="jk">Jenis kelamin</label>
-            <select id="jk" class="form-control">
-              <option value="" disabled selected>Pilih jenis kelamin</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-          </div>
+            <div class="form-group">
+                <label for="lokasi">Lokasi Pekerjaan *</label>
+                <input
+                    type="text"
+                    id="lokasi"
+                    name="alamat"
+                    class="form-control"
+                    placeholder="Kelurahan/Kecamatan"
+                    required
+                >
+            </div>
 
-          <div class="form-group">
-            <label for="deskripsi">Deskripsi diri</label>
-            <textarea id="deskripsi" class="form-control" placeholder="Ceritakan singkat tentang dirimu"></textarea>
-          </div>
+            <div class="form-group">
+                <label for="jk">Jenis Kelamin</label>
+                <select
+                    id="jk"
+                    name="jenis_kelamin"
+                    class="form-control"
+                >
+                    <option value="">Pilih jenis kelamin</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="deskripsi">Deskripsi Diri</label>
+                <textarea
+                    id="deskripsi"
+                    name="deskripsi_diri"
+                    class="form-control"
+                    placeholder="Ceritakan singkat tentang dirimu"
+                ></textarea>
+            </div>
 
         </div>
 
+        <!-- Kolom kanan: Informasi penyedia -->
         <div class="right-col" style="display: flex; flex-direction: column; gap: 20px;">
 
-          <div class="form-group">
-            <label>Foto profil</label>
-            <div class="file-upload-wrapper">
-              <label for="foto-upload" class="file-btn">Unggah foto</label>
-              <input type="file" id="foto-upload" accept="image/png, image/jpeg">
-              <span id="foto-label" class="file-label">Belum ada file dipilih</span>
+            <div class="form-group">
+                <label for="foto-upload">Foto Profil</label>
+
+                <div class="file-upload-wrapper">
+                    <label for="foto-upload" class="file-btn">
+                        Unggah Foto
+                    </label>
+
+                    <input
+                        type="file"
+                        id="foto-upload"
+                        name="foto_profil"
+                        accept=".jpg,.jpeg,.png"
+                    >
+
+                    <span id="foto-label" class="file-label">
+                        Belum ada file dipilih
+                    </span>
+                </div>
+
+                <div class="file-note">
+                    JPG atau PNG, maksimal 2 MB.
+                </div>
             </div>
-            <div class="file-note">JPG atau PNG, maks. 2 MB</div>
-          </div>
+            <div class="form-group">
+                <label>Jenis Penyedia *</label>
 
-          <div class="form-group">
-            <label>Jenis penyedia*</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="jenis_penyedia" value="Individu" required>
-                Individu
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="jenis_penyedia" value="Rumah tangga">
-                Rumah tangga
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="jenis_penyedia" value="Usaha/UMKM">
-                Usaha/UMKM
-              </label>
+                <div class="radio-group">
+
+                    <label class="radio-label">
+                        <input
+                            type="radio"
+                            name="jenis_pemberi"
+                            value="Individu"
+                            required
+                        >
+                        Individu
+                    </label>
+
+                    <label class="radio-label">
+                        <input
+                            type="radio"
+                            name="jenis_pemberi"
+                            value="Rumah tangga"
+                        >
+                        Rumah Tangga
+                    </label>
+
+                    <label class="radio-label">
+                        <input
+                            type="radio"
+                            name="jenis_pemberi"
+                            value="Usaha/UMKM"
+                        >
+                        Usaha/UMKM
+                    </label>
+
+                </div>
             </div>
-          </div>
+            <div class="form-group">
+                <label for="nama-usaha">Nama Usaha</label>
 
-          <div class="form-group">
-            <label for="nama-usaha">Nama usaha</label>
-            <input type="text" id="nama-usaha" class="form-control" placeholder="Masukkan nama usaha, jika ada">
-          </div>
+                <input
+                    type="text"
+                    id="nama-usaha"
+                    name="nama_usaha"
+                    class="form-control"
+                    placeholder="Masukkan nama usaha, jika ada"
+                >
 
-          <div class="form-group">
-            <label>Dokumen verifikasi*</label>
-            <div class="file-upload-wrapper">
-              <label for="dokumen-upload" class="file-btn">Unggah dokumen</label>
-              <input type="file" id="dokumen-upload" accept="image/png, image/jpeg, application/pdf" required>
-              <span id="dokumen-label" class="file-label">Belum ada file dipilih</span>
+                <div class="file-note">
+                    Wajib diisi jika memilih jenis penyedia Usaha/UMKM.
+                </div>
             </div>
-            <div class="file-note">JPG, PNG, atau PDF, maks. 5 MB</div>
-          </div>
-
+            <div class="form-group">
+                <label for="dokumen-upload">Dokumen Verifikasi *</label>
+                <div class="file-upload-wrapper">
+                    <label for="dokumen-upload" class="file-btn">
+                        Unggah Dokumen
+                    </label>
+                    <input
+                        type="file"
+                        id="dokumen-upload"
+                        name="dokumen_verifikasi"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        required
+                    >
+                    <span id="dokumen-label" class="file-label">
+                        Belum ada file dipilih
+                    </span>
+                </div>
+                <div class="file-note">
+                    JPG, PNG, atau PDF, maksimal 5 MB.
+                </div>
+            </div>
         </div>
-
-      </div>
-
-      <div class="submit-section">
-        <button type="submit" class="btn-submit">Selesaikan pendaftaran</button>
-      </div>
-    </form>
+    </div>
+    <div class="submit-section">
+        <button type="submit" class="btn-submit">
+            Selesaikan Pendaftaran
+        </button>
+    </div>
+</form>
 
   </div>
 
   <script>
-    const fotoUpload = document.getElementById('foto-upload');
-    const fotoLabel = document.getElementById('foto-label');
 
-    fotoUpload.addEventListener('change', function() {
-      if (this.files && this.files[0]) {
-        fotoLabel.textContent = this.files[0].name;
-        fotoLabel.style.color = '#1b7348';
-      } else {
-        fotoLabel.textContent = 'Belum ada file dipilih';
-        fotoLabel.style.color = '#777';
-      }
-    });
+async function updateAccountStatus() {
+    const statusElement = document.getElementById('accountStatus');
+    const token = sessionStorage.getItem('auth_token');
 
-    const dokumenUpload = document.getElementById('dokumen-upload');
-    const dokumenLabel = document.getElementById('dokumen-label');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
 
-    dokumenUpload.addEventListener('change', function() {
-      if (this.files && this.files[0]) {
-        dokumenLabel.textContent = this.files[0].name;
-        dokumenLabel.style.color = '#1b7348';
-      } else {
-        dokumenLabel.textContent = 'Belum ada file dipilih';
-        dokumenLabel.style.color = '#777';
-      }
-    });
+    try {
+        const response = await fetch('/api/user', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                sessionStorage.removeItem('auth_token');
+                sessionStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
+
+            throw new Error('Gagal mengambil data akun.');
+        }
+
+        const result = await response.json();
+
+        // Mendukung respons API berbentuk { user: {...} }
+        // maupun respons yang langsung berisi data pengguna.
+        const user = result.user ?? result;
+
+        // Perbarui data pengguna di sessionStorage.
+        sessionStorage.setItem('user', JSON.stringify(user));
+
+        // Tampilkan status akun terbaru.
+        switch (user.status_akun) {
+            case 'belum_lengkap':
+                statusElement.textContent =
+                    'Silakan lengkapi biodata Anda.';
+                break;
+
+            case 'menunggu_verifikasi':
+                statusElement.textContent =
+                    'Akun Anda sedang menunggu verifikasi Admin.';
+                break;
+
+            case 'aktif':
+                statusElement.textContent =
+                    'Akun Anda sudah terverifikasi.';
+                break;
+
+            case 'ditolak':
+                statusElement.textContent =
+                    'Verifikasi ditolak. Silakan periksa kembali biodata Anda.';
+                break;
+
+            case 'ditangguhkan':
+                statusElement.textContent =
+                    'Akun Anda sedang ditangguhkan.';
+                break;
+
+            default:
+                statusElement.textContent =
+                    'Status akun tidak diketahui.';
+        }
+
+    } catch (error) {
+        console.error(error);
+        statusElement.textContent =
+            'Gagal memeriksa status akun. Silakan muat ulang halaman.';
+    }
+}
+
+updateAccountStatus();
+
   </script>
 
 </body>
