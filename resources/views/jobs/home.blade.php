@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - bisaKerja</title>
+    <link rel="stylesheet" href="{{ asset('css/provider-navigation.css') }}">
+    <script src="{{ asset('js/provider-navigation.js') }}" defer></script>
+    <script src="{{ asset('js/seeker-applications-link.js') }}" defer></script>
 
     <style>
         * {
@@ -94,6 +97,16 @@
     </a>
 </header>
 
+<div class="provider-home-layout">
+    <aside id="provider-navigation" hidden aria-label="Navigasi penyedia pekerjaan">
+        <nav>
+            <a href="{{ route('home') }}" aria-current="page">Beranda</a>
+            <a href="{{ route('home', ['view' => 'pelamar-saya']) }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/></svg>
+                Pelamar Saya
+            </a>
+        </nav>
+    </aside>
 <main>
     <div class="content">
         <h1>Selamat Datang di bisaKerja!</h1>
@@ -102,8 +115,11 @@
         <div class="status" id="accountStatus">
             Memeriksa status akun...
         </div>
+        <p id="provider-navigation-notice" role="status" hidden></p>
+        <p id="seeker-applications-link" hidden><a href="{{ route('seeker.applications') }}" style="color: #1d704f; font-weight: 600;">Lamaran Saya</a></p>
     </div>
 </main>
+</div>
 
 <script>
     const user = JSON.parse(sessionStorage.getItem('user'));

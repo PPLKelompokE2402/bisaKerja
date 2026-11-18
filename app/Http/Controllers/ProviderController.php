@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Storage;
 
 class ProviderController extends Controller
 {
+    public function create()
+    {
+        return view('auth.provider-biodata');
+    }
+
     public function store(Request $request)
     {
         // Ambil pengguna yang login melalui Sanctum
@@ -100,13 +105,17 @@ class ProviderController extends Controller
             $user->save();
         } catch (\Throwable $error) {
             // Hapus file baru jika penyimpanan database gagal
-            if (isset($validated['foto_profil']) &&
-                $validated['foto_profil'] !== $oldFoto) {
+            if (
+                isset($validated['foto_profil']) &&
+                $validated['foto_profil'] !== $oldFoto
+            ) {
                 Storage::disk('public')->delete($validated['foto_profil']);
             }
 
-            if (isset($validated['dokumen_verifikasi']) &&
-                $validated['dokumen_verifikasi'] !== $oldDokumen) {
+            if (
+                isset($validated['dokumen_verifikasi']) &&
+                $validated['dokumen_verifikasi'] !== $oldDokumen
+            ) {
                 Storage::disk('public')->delete($validated['dokumen_verifikasi']);
             }
 
@@ -114,15 +123,19 @@ class ProviderController extends Controller
         }
 
         // Hapus file lama setelah data baru berhasil disimpan
-        if (isset($validated['foto_profil']) &&
+        if (
+            isset($validated['foto_profil']) &&
             $oldFoto &&
-            $oldFoto !== $validated['foto_profil']) {
+            $oldFoto !== $validated['foto_profil']
+        ) {
             Storage::disk('public')->delete($oldFoto);
         }
 
-        if (isset($validated['dokumen_verifikasi']) &&
+        if (
+            isset($validated['dokumen_verifikasi']) &&
             $oldDokumen &&
-            $oldDokumen !== $validated['dokumen_verifikasi']) {
+            $oldDokumen !== $validated['dokumen_verifikasi']
+        ) {
             Storage::disk('public')->delete($oldDokumen);
         }
 
