@@ -246,9 +246,16 @@
 
             // Arahkan pengguna setelah login
          if (result.user.role === 'admin') {
-                 window.location.href = '/admin/dashboard';
-            } else {
+    window.location.href = '/admin/dashboard';
+
+            } else if (result.user.role === 'pencari_kerja') {
+                window.location.href = '/lowongan';
+
+            } else if (result.user.role === 'penyedia_pekerjaan') {
                 window.location.href = '/home';
+
+            } else {
+                alert('Role pengguna tidak dikenali.');
             }
 
         } catch (error) {

@@ -13,7 +13,13 @@ use Illuminate\Support\Facades\Route;
 
 // Landing page
 Route::get('/', function () {
-    return view('welcome');
+    $jobs = JobVacancy::with(['employer', 'kategori'])
+        ->where('status_lowongan', 'aktif')
+        ->latest('dibuat_pada')
+        ->take(3)
+        ->get();
+
+    return view('jobs.welcome', compact('jobs'));
 })->name('welcome');
 
 // Daftar dan detail lowongan
@@ -55,7 +61,7 @@ Route::get('/register', function () {
 
 // Home pengguna
 Route::get('/home', function () {
-    return view('home');
+    return redirect()->route('employer.vacancies.index');
 })->name('home');
 
 // Halaman Admin
