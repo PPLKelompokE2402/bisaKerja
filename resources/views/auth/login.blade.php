@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - bisaKerja</title>
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         * {
             margin: 0;
@@ -195,7 +195,7 @@
 
 </main>
 <script>
-    const loginForm = document.getElementById('loginForm');
+   const loginForm = document.getElementById('loginForm');
 
     loginForm.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -211,6 +211,7 @@
         submitButton.textContent = 'Memproses...';
 
         try {
+            // 1. Login menggunakan API
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: {
@@ -220,8 +221,10 @@
                 body: JSON.stringify(formData)
             });
 
+            // Ambil hasil respons login
             const result = await response.json();
 
+            // Periksa apakah login berhasil
             if (!response.ok) {
                 if (result.errors) {
                     const messages = Object.values(result.errors)
@@ -236,31 +239,55 @@
                 return;
             }
 
-            // Simpan token autentikasi
-            sessionStorage.setItem('auth_token', result.token);
+            // 2. Hubungkan token Sanctum dengan session Laravel
+            const sessionResponse = await fetch('/auth/session', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content
+                },
+                body: JSON.stringify({
+                    token: result.token
+                })
+            });
 
-            // Simpan informasi pengguna
+            const sessionResult = await sessionResponse.json();
+
+            if (!sessionResponse.ok) {
+                alert(
+                    sessionResult.message ||
+                    'Gagal membuat session login.'
+                );
+
+                return;
+            }
+
+            // 3. Simpan token dan informasi pengguna
+            sessionStorage.setItem('auth_token', result.token);
             sessionStorage.setItem('user', JSON.stringify(result.user));
 
             alert(result.message);
 
-            // Arahkan pengguna setelah login
-         if (result.user.role === 'admin') {
-    window.location.href = '/admin/dashboard';
-
-            } else if (result.user.role === 'pencari_kerja') {
-                window.location.href = '/lowongan';
-
-            } else if (result.user.role === 'penyedia_pekerjaan') {
-                window.location.href = '/home';
-
-            } else {
+            if (!['admin', 'pencari_kerja', 'penyedia_pekerjaan'].includes(result.user.role)) {
                 alert('Role pengguna tidak dikenali.');
+                return;
             }
 
+            const destinationByRole = {
+                admin: "{{ route('admin.dashboard') }}",
+                pencari_kerja: "{{ route('jobs.index') }}",
+                penyedia_pekerjaan: "{{ route('employer.vacancies.index') }}"
+            };
+
+            window.location.href = destinationByRole[result.user.role];
+
         } catch (error) {
-            console.error(error);
-            alert('Terjadi kesalahan koneksi ke server.');
+            console.error('Detail error login:', error);
+            alert('Terjadi kesalahan: ' + error.message);
 
         } finally {
             submitButton.disabled = false;

@@ -21,6 +21,7 @@
     let listRequest;
     let detailRequest;
     let selectedId;
+    let cvExtension = 'pdf';
     let photoUrl;
 
     const dateLabel = (value) => value
@@ -145,6 +146,7 @@
         detailRequest = new AbortController();
         const request = detailRequest;
         selectedId = id;
+        cvExtension = 'pdf';
         clearPhoto();
         element('detail-content').hidden = true;
         element('detail-loading').hidden = false;
@@ -156,7 +158,11 @@
             if (request.signal.aborted) return;
             element('detail-fields').replaceChildren();
             const applicant = data.pelamar;
+            cvExtension = applicant.cv_extension || 'pdf';
             detailField('Nama lengkap', applicant.nama);
+            detailField('Tanggal lahir', applicant.tanggal_lahir);
+            detailField('Umur', applicant.umur === null ? null : `${applicant.umur} tahun`);
+            detailField('Tempat tinggal', applicant.alamat);
             detailField('Email', applicant.email);
             detailField('Nomor telepon', applicant.nomor_telepon);
             detailField('Pekerjaan', data.pekerjaan);
@@ -198,7 +204,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'CV-pelamar.pdf';
+            link.download = `CV-pelamar.${cvExtension}`;
             document.body.append(link);
             link.click();
             link.remove();
@@ -210,7 +216,7 @@
             }
         } finally {
             button.disabled = false;
-            button.textContent = 'Unduh CV (PDF)';
+            button.textContent = 'Unduh CV';
         }
     });
     element('close').addEventListener('click', () => dialog.close());

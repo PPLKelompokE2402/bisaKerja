@@ -2,144 +2,149 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Job;
-use App\Models\JobApplication;
+use App\Models\JobVacancy;
+use App\Models\Lamaran;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 class JobApplicationController extends Controller
 {
     /**
-     * Menampilkan form pengajuan lamaran pekerjaan berdasarkan lowongan yang dipilih.
-     *
-     * @param int|string $id ID lowongan pekerjaan
+     * Menampilkan form pengajuan lamaran.
      */
     public function create($id)
     {
-        // Memastikan lowongan benar-benar tersedia
-        $job = Job::findOrFail($id);
-
-        // Fitur pendukung: Jika belum ada session login (karena modul login web SCRUM-51 belum di-merge),
-        // gunakan akun demo Pencari Kerja agar pengujian form di browser dapat langsung dicoba.
-        if (!Auth::check()) {
-            $demoUser = User::firstOrCreate(
-                ['email' => 'pencari.kerja@bisakerja.com'],
-                ['name' => 'Budi Pencari Kerja', 'password' => bcrypt('password123')]
-            );
-            Auth::login($demoUser);
-        }
+        $job = $this->availableVacancy($id)->load(['employer', 'kategori']);
 
         $user = Auth::user();
-        
-        // Memeriksa apakah user sudah pernah mengajukan lamaran untuk lowongan ini
-        $existingApplication = null;
-        if ($user) {
-            $existingApplication = JobApplication::where('user_id', $user->id)
-                ->where('job_id', $job->id)
-                ->first();
+
+        if (! $user) {
+            return redirect()->route('login')
+                ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Menampilkan form pengajuan lamaran dengan data lowongan dari database
-        return view('jobs.apply', compact('job', 'existingApplication'));
+        $age = $user->tanggal_lahir?->age;
+
+        // Cek apakah pengguna sudah pernah melamar lowongan ini.
+        $existingApplication = Lamaran::where('id_pencari', $user->id_pengguna)
+            ->where('id_lowongan', $job->id_lowongan)
+            ->first();
+
+        return view('jobs.apply', compact('job', 'existingApplication', 'user', 'age'));
     }
 
     /**
-     * Memproses penyimpanan pengajuan lamaran dan pengunggahan berkas CV (opsional).
-     *
-     * @param Request $request
-     * @param int|string $id ID lowongan pekerjaan
+     * Menyimpan pengajuan lamaran ke tabel lamaran.
      */
     public function store(Request $request, $id)
     {
-        // Fitur pendukung pengujian browser
-        if (!Auth::check()) {
-            $demoUser = User::firstOrCreate(
-                ['email' => 'pencari.kerja@bisakerja.com'],
-                ['name' => 'Budi Pencari Kerja', 'password' => bcrypt('password123')]
-            );
-            Auth::login($demoUser);
-        }
-
         $user = Auth::user();
 
-        // Keamanan: Memastikan identitas pelamar diambil dari session login
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk mengajukan lamaran.');
+        if (! $user) {
+            return redirect()->route('login')
+                ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Memastikan lowongan yang dilamar tersedia di database
-        $job = Job::findOrFail($id);
+        $job = $this->availableVacancy($id);
 
-        // Mencegah pengajuan ganda untuk lowongan yang sama
-        $alreadyApplied = JobApplication::where('user_id', $user->id)
-            ->where('job_id', $job->id)
+        // Cegah pengguna melamar lowongan yang sama lebih dari sekali.
+        $alreadyApplied = Lamaran::where('id_pencari', $user->id_pengguna)
+            ->where('id_lowongan', $job->id_lowongan)
             ->exists();
 
         if ($alreadyApplied) {
-            return redirect()->back()->with('error', 'Anda sudah pernah mengajukan lamaran untuk lowongan pekerjaan ini.');
+            return redirect()->route('jobs.apply', $job->id_lowongan)
+                ->with('error', 'Anda sudah pernah mengajukan lamaran untuk lowongan ini.');
         }
 
-        // Validasi data pelamar dan berkas CV (CV bersifat opsional)
         $validated = $request->validate([
-            'applicant_name' => ['required', 'string', 'max:255'],
-            'date_of_birth'  => ['required', 'date', 'before_or_equal:today'],
-            'age'            => ['required', 'integer', 'min:15', 'max:99'],
-            'residence'      => ['required', 'string', 'max:255'],
-            'skills'         => ['required', 'string'],
-            'cv'             => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:2048'],
+            'nama_lengkap' => ['required', 'string', 'max:100'],
+            'tanggal_lahir' => ['required', 'date', 'before_or_equal:today'],
+            'tempat_tinggal' => ['required', 'string', 'max:1000'],
+            'keahlian' => ['required', 'string', 'max:2000'],
+            'cv' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:2048'],
+            'pesan_lamaran' => ['required', 'string', 'max:3000'],
         ], [
-            'applicant_name.required'       => 'Nama lengkap wajib diisi.',
-            'date_of_birth.required'        => 'Tanggal lahir wajib diisi.',
-            'date_of_birth.before_or_equal' => 'Tanggal lahir tidak boleh berupa tanggal di masa depan.',
-            'age.required'                  => 'Umur wajib diisi.',
-            'age.integer'                   => 'Umur harus berupa angka bilangan bulat.',
-            'age.min'                       => 'Umur minimal adalah 15 tahun.',
-            'age.max'                       => 'Umur maksimal adalah 99 tahun.',
-            'residence.required'            => 'Tempat tinggal wajib diisi.',
-            'skills.required'               => 'Keahlian wajib diisi.',
-            'cv.file'                       => 'Berkas CV yang diunggah tidak valid.',
-            'cv.mimes'                      => 'Format berkas CV yang diperbolehkan adalah PDF, DOC, atau DOCX.',
-            'cv.max'                        => 'Ukuran berkas CV tidak boleh melebihi 2MB.',
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 100 karakter.',
+            'tanggal_lahir.required' => 'Tanggal lahir wajib diisi.',
+            'tanggal_lahir.date' => 'Tanggal lahir harus berupa tanggal yang valid.',
+            'tanggal_lahir.before_or_equal' => 'Tanggal lahir tidak boleh melebihi hari ini.',
+            'tempat_tinggal.required' => 'Tempat tinggal wajib diisi.',
+            'tempat_tinggal.max' => 'Tempat tinggal maksimal 1000 karakter.',
+            'keahlian.required' => 'Keahlian wajib diisi.',
+            'keahlian.max' => 'Keahlian maksimal 2000 karakter.',
+            'pesan_lamaran.required' => 'Pesan lamaran wajib diisi.',
+            'pesan_lamaran.max' => 'Pesan lamaran maksimal 3000 karakter.',
+            'cv.mimes' => 'CV harus berformat PDF, DOC, atau DOCX.',
+            'cv.max' => 'Ukuran CV maksimal 2 MB.',
         ]);
 
-        // Penanganan berkas CV opsional ke private storage
-        $cvPath = null;
-        if ($request->hasFile('cv')) {
-            $file = $request->file('cv');
-            $safeFileName = 'cv_user_' . $user->id . '_job_' . $job->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $cvPath = $file->storeAs('cv_applications', $safeFileName, 'local');
+        $storedCvPath = null;
+        $cvFile = $request->file('cv');
+
+        if ($cvFile !== null) {
+            $storedCvPath = $cvFile->store('cv', 'local');
+
+            if ($storedCvPath === false) {
+                throw new RuntimeException('CV gagal disimpan. Silakan coba kembali.');
+            }
         }
 
-        // Transaksi penyimpanan data pengajuan lamaran ke database
-        DB::beginTransaction();
         try {
-            JobApplication::create([
-                'user_id'        => $user->id,
-                'job_id'         => $job->id,
-                'applicant_name' => $validated['applicant_name'],
-                'date_of_birth'  => $validated['date_of_birth'],
-                'age'            => $validated['age'],
-                'residence'      => $validated['residence'],
-                'skills'         => $validated['skills'],
-                'cv_path'        => $cvPath,
-                'status'         => 'pending',
-            ]);
+            DB::transaction(function () use ($validated, $storedCvPath, $user, $job): void {
+                $profile = [
+                    'nama' => $validated['nama_lengkap'],
+                    'tanggal_lahir' => $validated['tanggal_lahir'],
+                    'alamat' => $validated['tempat_tinggal'],
+                    'keahlian' => $validated['keahlian'],
+                ];
 
-            DB::commit();
-        } catch (\Throwable $e) {
-            DB::rollBack();
+                if ($storedCvPath !== null) {
+                    $profile['cv'] = $storedCvPath;
+                }
 
-            // Menghapus file jika penyimpanan database gagal (mencegah orphaned files)
-            if ($cvPath && Storage::disk('local')->exists($cvPath)) {
-                Storage::disk('local')->delete($cvPath);
+                /** @var User $user */
+                $user->update($profile);
+                Lamaran::create([
+                    'id_lowongan' => $job->id_lowongan,
+                    'id_pencari' => $user->id_pengguna,
+                    'pesan_lamaran' => $validated['pesan_lamaran'],
+                    // status_lamaran dan status_pekerjaan menggunakan nilai default database.
+                ]);
+            });
+        } catch (Throwable $exception) {
+            if ($storedCvPath !== null) {
+                $disk = Storage::disk('local');
+
+                if ($disk->exists($storedCvPath) && ! $disk->delete($storedCvPath)) {
+                    Log::warning('Gagal menghapus CV sementara setelah pengajuan lamaran gagal.', [
+                        'path' => $storedCvPath,
+                    ]);
+                }
             }
 
-            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memproses lamaran Anda. Silakan coba lagi.');
+            throw $exception;
         }
 
-        return redirect()->route('jobs.apply', $job->id)->with('success', 'Lamaran pekerjaan berhasil dikirimkan!');
+        return redirect()->route('jobs.apply', $job->id_lowongan)
+            ->with('success', 'Lamaran pekerjaan berhasil dikirimkan!');
+    }
+
+    private function availableVacancy(int|string $id): JobVacancy
+    {
+        return JobVacancy::query()
+            ->where('status_lowongan', 'aktif')
+            ->whereHas('employer', function ($employers): void {
+                $employers->where('role', 'penyedia_pekerjaan')
+                    ->where('status_akun', 'aktif');
+            })
+            ->findOrFail($id);
     }
 }

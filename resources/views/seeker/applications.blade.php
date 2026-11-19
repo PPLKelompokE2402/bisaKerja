@@ -11,14 +11,15 @@
     <header class="seeker-header">
         <a href="{{ route('home') }}" class="seeker-logo">bisaKerja</a>
         <span>Pencari Kerja</span>
+        @include('components.logout-form', ['buttonClass' => 'seeker-button'])
     </header>
     <div class="seeker-layout">
         <aside class="seeker-sidebar">
             <nav aria-label="Navigasi pencari kerja">
                 <a href="{{ route('home') }}">Beranda</a>
                 <a href="{{ route('seeker.applications') }}" aria-current="page">Lamaran Saya</a>
-                <a href="#">Chat</a>
-                <a href="#">Profil</a>
+                <span class="seeker-disabled-menu" aria-disabled="true">Chat (Belum tersedia)</span>
+                <span class="seeker-disabled-menu" aria-disabled="true">Profil (Belum tersedia)</span>
             </nav>
         </aside>
         <main class="seeker-content">

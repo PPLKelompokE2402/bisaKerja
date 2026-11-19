@@ -1,11 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan Lamaran - {{ $job->title }} - bisaKerja</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Form Pengajuan Lamaran - {{ $job->judul }} - bisaKerja</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -23,85 +25,139 @@
         }
     </script>
 </head>
+
 <body class="bg-gray-50 min-h-screen flex">
 
-    <!-- Sidebar Left (Konsisten dengan Desain Mockup) -->
+    <!-- Sidebar -->
     <aside class="w-64 bg-white border-r min-h-screen p-6 hidden md:block">
         <div class="flex items-center gap-2 mb-8">
-            <span class="text-2xl font-bold text-emerald-800">bisaKerja</span>
+            <span class="text-2xl font-bold text-emerald-800">
+                bisaKerja
+            </span>
         </div>
+
         <nav class="space-y-2">
-            <a href="{{ route('jobs.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <span>Beranda</span>
+            <a href="{{ route('jobs.index') }}"
+               class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                Beranda
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <span>Lamaran Saya</span>
+
+            <a href="{{ route('seeker.applications') }}"
+               class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                Lamaran Saya
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <span>Chat</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <span>Profil</span>
-            </a>
+
+            <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+            <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main class="flex-1">
-        <!-- Header Nav -->
+
+        <!-- Header -->
         <header class="bg-white border-b px-8 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-800 md:hidden">bisaKerja</h1>
-            <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full ml-auto">Pencari Kerja</span>
+            <h1 class="text-xl font-bold text-gray-800 md:hidden">
+                bisaKerja
+            </h1>
+
+            <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full ml-auto">
+                Pencari Kerja
+            </span>
+            @include('components.logout-form', ['buttonClass' => 'ml-4 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'])
         </header>
 
         <div class="p-6 md:p-8 max-w-4xl mx-auto space-y-6">
 
             <!-- Tombol Kembali -->
             <div>
-                <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 text-sm font-semibold transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                <a href="{{ route('jobs.show', $job->id_lowongan) }}"
+                   class="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 text-sm font-semibold transition">
+
+                    <svg class="w-4 h-4"
+                         fill="none"
+                         stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 19l-7-7 7-7">
+                        </path>
                     </svg>
+
                     Kembali ke Detail Lowongan
                 </a>
             </div>
 
             <!-- Judul Halaman -->
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-emerald-800">Form Pengajuan Lamaran Pekerjaan</h1>
-                <p class="text-gray-600 text-sm mt-1">Lengkapi data diri dan berkas lamaran untuk posisi yang Anda tuju</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-emerald-800">
+                    Form Pengajuan Lamaran Pekerjaan
+                </h1>
+
+                <p class="text-gray-600 text-sm mt-1">
+                    Sampaikan ketertarikan dan alasan Anda melamar pekerjaan ini.
+                </p>
             </div>
 
-            <!-- Notifikasi Pesan Sukses -->
+            <!-- Notifikasi Sukses -->
             @if(session('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-start gap-3 shadow-sm">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div>
-                        <p class="font-semibold text-sm">{{ session('success') }}</p>
-                        <p class="text-xs text-emerald-700 mt-0.5">Lamaran Anda telah tercatat dengan status PENDING dan tersimpan secara aman di sistem.</p>
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+
+                        <div>
+                            <p class="font-semibold text-sm">
+                                {{ session('success') }}
+                            </p>
+
+                            <p class="text-xs text-emerald-700 mt-1">
+                                Lamaran Anda berhasil dikirim dan menunggu respons penyedia pekerjaan.
+                            </p>
+                        </div>
                     </div>
                 </div>
             @endif
 
-            <!-- Notifikasi Pesan Error -->
+            <!-- Notifikasi Error -->
             @if(session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-start gap-3 shadow-sm">
-                    <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div>
-                        <p class="font-semibold text-sm">{{ session('error') }}</p>
+                <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+
+                        <p class="font-semibold text-sm">
+                            {{ session('error') }}
+                        </p>
                     </div>
                 </div>
             @endif
 
             <!-- Ringkasan Error Validasi -->
             @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-xs space-y-1 shadow-sm">
-                    <p class="font-bold text-sm">Mohon periksa kembali isian formulir:</p>
-                    <ul class="list-disc list-inside space-y-0.5 text-red-700">
+                <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-sm">
+                    <p class="font-bold text-sm mb-2">
+                        Mohon periksa kembali isian formulir:
+                    </p>
+
+                    <ul class="list-disc list-inside space-y-1 text-xs text-red-700">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -109,308 +165,321 @@
                 </div>
             @endif
 
-            <!-- Bagian A: Informasi Lowongan Pekerjaan (Hanya Tampil, Tidak Boleh Diedit) -->
+            <!-- Informasi Lowongan -->
             <div class="bg-white border rounded-2xl p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-emerald-800 mb-3">Informasi Lowongan yang Dipilih</h2>
-                <div class="space-y-3">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4">
+                <h2 class="text-lg font-bold text-emerald-800 mb-4">
+                    Informasi Lowongan yang Dipilih
+                </h2>
+
+                <div class="space-y-4">
+
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-4">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900">{{ $job->title }}</h3>
+                            <h3 class="text-xl font-bold text-gray-900">
+                                {{ $job->judul }}
+                            </h3>
+
                             <p class="text-gray-600 text-sm mt-1">
-                                📍 {{ $job->location }} &bull; <span class="font-medium text-gray-700">{{ $job->company }}</span>
+                                📍 {{ $job->lokasi }}
+                                &bull;
+                                <span class="font-medium text-gray-700">
+                                    {{ $job->employer->nama ?? 'Penyedia Pekerjaan' }}
+                                </span>
                             </p>
                         </div>
-                        <span class="inline-block self-start md:self-auto bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200">
-                            {{ $job->type }}
+
+                        <span class="inline-block self-start bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200">
+                            {{ $job->kategori->nama_kategori ?? 'Umum' }}
                         </span>
                     </div>
-                    <div class="flex items-center justify-between pt-1">
-                        <span class="text-sm text-gray-500 font-medium">Estimasi Gaji:</span>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-500 font-medium">
+                            Upah yang Ditawarkan:
+                        </span>
+
                         <span class="text-emerald-700 font-bold text-base">
-                            Rp {{ number_format($job->salary_min) }} - Rp {{ number_format($job->salary_max) }}
+                            Rp {{ number_format($job->upah, 0, ',', '.') }}
                         </span>
                     </div>
+
+                    @if($job->deskripsi)
+                        <div class="pt-2">
+                            <p class="text-sm font-semibold text-gray-700 mb-1">
+                                Deskripsi Pekerjaan
+                            </p>
+
+                            <p class="text-sm text-gray-600 whitespace-pre-line">
+                                {{ $job->deskripsi }}
+                            </p>
+                        </div>
+                    @endif
+
                 </div>
             </div>
 
-            <!-- Jika Pengguna Sudah Pernah Mengajukan Lamaran untuk Lowongan Ini -->
+            <!-- Jika Sudah Pernah Melamar -->
             @if($existingApplication)
-                <div class="bg-amber-50 border border-amber-200 text-amber-900 p-6 rounded-2xl flex items-start gap-4 shadow-sm">
-                    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0 text-amber-600 mt-0.5">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="space-y-2 flex-1">
-                        <h3 class="font-bold text-base text-amber-900">Anda Sudah Mengajukan Lamaran</h3>
-                        <p class="text-sm text-amber-800">
-                            Lamaran Anda untuk posisi <strong>{{ $job->title }}</strong> di <strong>{{ $job->company }}</strong> telah tercatat pada 
-                            <strong>{{ $existingApplication->created_at->format('d M Y, H:i') }}</strong>.
-                        </p>
-                        <div class="pt-1 flex items-center gap-2">
-                            <span class="text-xs text-amber-800 font-medium">Status Pengajuan:</span>
-                            <span class="inline-block px-2.5 py-1 bg-amber-200 text-amber-900 rounded-md font-bold uppercase text-xs tracking-wider">
-                                {{ $existingApplication->status }}
-                            </span>
+
+                <div class="bg-amber-50 border border-amber-200 text-amber-900 p-6 rounded-2xl shadow-sm">
+
+                    <div class="flex items-start gap-4">
+
+                        <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0 text-amber-600">
+                            <svg class="w-6 h-6"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
                         </div>
-                        <div class="pt-3">
-                            <a href="{{ route('jobs.show', $job->id) }}" class="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold px-4 py-2 rounded-lg text-xs transition">
-                                &larr; Kembali ke Detail Lowongan
-                            </a>
+
+                        <div class="space-y-3 flex-1">
+
+                            <h3 class="font-bold text-base text-amber-900">
+                                Anda Sudah Mengajukan Lamaran
+                            </h3>
+
+                            <p class="text-sm text-amber-800">
+                                Lamaran Anda untuk posisi
+                                <strong>{{ $job->judul }}</strong>
+                                telah tercatat pada
+                                <strong>
+                                    {{ \Carbon\Carbon::parse($existingApplication->tanggal_lamaran)->format('d M Y, H:i') }}
+                                </strong>.
+                            </p>
+
+                            <div>
+                                <span class="text-xs text-amber-800 font-medium">
+                                    Status Pengajuan:
+                                </span>
+
+                                <span class="inline-block ml-2 px-2.5 py-1 bg-amber-200 text-amber-900 rounded-md font-bold uppercase text-xs tracking-wider">
+                                    {{ $existingApplication->status_lamaran }}
+                                </span>
+                            </div>
+
+                            @if($existingApplication->pesan_lamaran)
+                                <div class="bg-white/70 border border-amber-200 rounded-lg p-3">
+                                    <p class="text-xs font-semibold text-amber-900 mb-1">
+                                        Pesan Lamaran Anda:
+                                    </p>
+
+                                    <p class="text-sm text-amber-800 whitespace-pre-line">
+                                        {{ $existingApplication->pesan_lamaran }}
+                                    </p>
+                                </div>
+                            @endif
+
+                            <div class="pt-2">
+                                <a href="{{ route('jobs.show', $job->id_lowongan) }}"
+                                   class="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold px-4 py-2 rounded-lg text-xs transition">
+                                    &larr; Kembali ke Detail Lowongan
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
+
             @else
-                <!-- Form Pengajuan Lamaran Pekerjaan (Tampil Jika Belum Pernah Melamar) -->
-                <form action="{{ route('jobs.apply.store', $job->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+                <!-- Form Pengajuan Lamaran -->
+                <form action="{{ route('jobs.apply.store', $job->id_lowongan) }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      class="space-y-6">
+
                     @csrf
 
-                    <!-- Bagian B: Data Diri Pelamar (Bisa Diedit Bebas oleh Pelamar) -->
                     <div class="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
                         <div>
                             <h2 class="text-lg font-bold text-emerald-800">Data Diri Pelamar</h2>
-                            <p class="text-gray-500 text-xs mt-0.5">Semua data diri di bawah ini dapat Anda ubah dan sesuaikan khusus untuk lamaran ini.</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <!-- 1. Nama Lengkap (Text, Wajib, Bisa Diedit) -->
-                            <div class="md:col-span-2">
-                                <label for="applicant_name" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    Nama Lengkap <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="applicant_name" 
-                                    id="applicant_name"
-                                    value="{{ old('applicant_name', auth()->user()->name ?? '') }}" 
-                                    placeholder="Masukkan nama lengkap Anda"
-                                    required
-                                    class="w-full px-4 py-2.5 rounded-lg border @error('applicant_name') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                                >
-                                @error('applicant_name')
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- 2. Tanggal Lahir (Date, Wajib, Bisa Diedit, Tidak Boleh Tanggal Masa Depan) -->
-                            <div>
-                                <label for="date_of_birth" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    Tanggal Lahir <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="date" 
-                                    name="date_of_birth" 
-                                    id="date_of_birth"
-                                    value="{{ old('date_of_birth') }}" 
-                                    max="{{ date('Y-m-d') }}"
-                                    required
-                                    class="w-full px-4 py-2.5 rounded-lg border @error('date_of_birth') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                                >
-                                @error('date_of_birth')
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- 3. Umur (Number, Wajib, Bisa Diedit, Angka Masuk Akal) -->
-                            <div>
-                                <label for="age" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    Umur (Tahun) <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="number" 
-                                    name="age" 
-                                    id="age"
-                                    value="{{ old('age') }}" 
-                                    placeholder="Contoh: 23"
-                                    min="15" 
-                                    max="99" 
-                                    required
-                                    class="w-full px-4 py-2.5 rounded-lg border @error('age') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                                >
-                                @error('age')
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- 4. Tempat Tinggal (Text, Wajib, Bebas Diedit) -->
-                            <div class="md:col-span-2">
-                                <label for="residence" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    Tempat Tinggal <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="residence" 
-                                    id="residence"
-                                    value="{{ old('residence') }}" 
-                                    placeholder="Masukkan tempat tinggal kamu"
-                                    required
-                                    class="w-full px-4 py-2.5 rounded-lg border @error('residence') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                                >
-                                @error('residence')
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- 5. Keahlian (Textarea, Wajib, Bebas Diketik Sendiri) -->
-                            <div class="md:col-span-2">
-                                <label for="skills" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    Keahlian yang Dimiliki <span class="text-red-500">*</span>
-                                </label>
-                                <textarea 
-                                    name="skills" 
-                                    id="skills"
-                                    rows="4" 
-                                    placeholder="Contoh: HTML, CSS, JavaScript, Laravel, komunikasi, teamwork, dan problem solving."
-                                    required
-                                    class="w-full px-4 py-2.5 rounded-lg border @error('skills') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                                >{{ old('skills') }}</textarea>
-                                @error('skills')
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bagian C: Upload CV (OPSIONAL — Pengguna Tetap Dapat Melamar Tanpa CV) -->
-                    <div class="bg-white border rounded-2xl p-6 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-bold text-emerald-800">Dokumen CV / Resume</h2>
-                            <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2.5 py-1 rounded-full">Opsional</span>
+                            <p class="text-gray-500 text-xs mt-1">Informasi ini akan disimpan pada profil Anda untuk pengajuan berikutnya.</p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Unggah Dokumen CV <span class="text-gray-400 font-normal text-xs">(Opsional)</span>
-                            </label>
-
-                            <!-- Dropzone Container -->
-                            <div 
-                                id="dropzone"
-                                class="border-2 border-dashed border-emerald-300 bg-emerald-50/30 rounded-2xl p-8 text-center transition hover:bg-emerald-50/60 cursor-pointer"
-                            >
-                                <div class="mx-auto w-12 h-12 text-emerald-600 mb-3 flex items-center justify-center">
-                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                    </svg>
-                                </div>
-
-                                <p class="text-sm text-gray-700 font-medium">
-                                    Tarik berkas CV ke sini atau 
-                                    <span class="text-emerald-700 font-semibold underline">Klik untuk memilih berkas</span>
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">Format PDF, DOC, atau DOCX. Ukuran maksimal 2MB.</p>
-
-                                <!-- Hidden file input (TANPA atribut required karena opsional) -->
-                                <input 
-                                    type="file" 
-                                    name="cv" 
-                                    id="cv_input" 
-                                    accept=".pdf,.doc,.docx" 
-                                    class="hidden"
-                                >
-
-                                <!-- Indikator Berkas Terpilih -->
-                                <div id="file_preview" class="hidden mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-800 shadow-sm">
-                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <span id="file_name">nama_berkas.pdf</span>
-                                    <span id="file_size" class="text-gray-400 font-normal"></span>
-                                    <button type="button" id="remove_file_btn" class="ml-2 text-red-500 hover:text-red-700 font-bold">&times;</button>
-                                </div>
-                            </div>
-
-                            @error('cv')
-                                <p class="text-red-600 text-xs mt-2 font-medium">{{ $message }}</p>
+                            <label for="nama_lengkap" class="block text-sm font-semibold text-gray-700 mb-2">Nama lengkap <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_lengkap" id="nama_lengkap" maxlength="100" required
+                                value="{{ old('nama_lengkap', $user->nama) }}"
+                                class="w-full px-4 py-3 rounded-lg border @error('nama_lengkap') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                            @error('nama_lengkap')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Keterangan Wajib Sesuai Instruksi -->
-                        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3.5 rounded-xl text-xs flex items-center gap-2.5">
-                            <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span>Upload CV bersifat opsional. Kamu tetap dapat mengirim lamaran tanpa melampirkan CV.</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label for="tanggal_lahir" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal lahir <span class="text-red-500">*</span></label>
+                                <input type="date" name="tanggal_lahir" id="tanggal_lahir" required max="{{ now()->toDateString() }}"
+                                    value="{{ old('tanggal_lahir', $user->tanggal_lahir?->format('Y-m-d')) }}"
+                                    class="w-full px-4 py-3 rounded-lg border @error('tanggal_lahir') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                                @error('tanggal_lahir')
+                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="umur" class="block text-sm font-semibold text-gray-700 mb-2">Umur <span class="text-red-500">*</span></label>
+                                <input type="number" id="umur" value="{{ $age }}" required readonly placeholder="Dihitung otomatis"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Dihitung otomatis berdasarkan tanggal lahir.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="tempat_tinggal" class="block text-sm font-semibold text-gray-700 mb-2">Tempat tinggal / alamat <span class="text-red-500">*</span></label>
+                            <textarea name="tempat_tinggal" id="tempat_tinggal" rows="3" maxlength="1000" required
+                                class="w-full px-4 py-3 rounded-lg border @error('tempat_tinggal') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">{{ old('tempat_tinggal', $user->alamat) }}</textarea>
+                            @error('tempat_tinggal')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="keahlian" class="block text-sm font-semibold text-gray-700 mb-2">Keahlian yang dimiliki <span class="text-red-500">*</span></label>
+                            <textarea name="keahlian" id="keahlian" rows="3" maxlength="2000" required
+                                class="w-full px-4 py-3 rounded-lg border @error('keahlian') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">{{ old('keahlian', $user->keahlian) }}</textarea>
+                            @error('keahlian')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="cv" class="block text-sm font-semibold text-gray-700 mb-2">CV / Resume (Opsional)</label>
+                            <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                class="w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:font-semibold file:text-emerald-800 hover:file:bg-emerald-100">
+                            <p id="cv-file-name" class="text-xs text-gray-500 mt-2">
+                                {{ $user->cv ? 'CV tersimpan. Pilih berkas baru untuk menggantinya.' : 'Belum ada CV yang dipilih.' }}
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">PDF, DOC, atau DOCX; maksimal 2 MB. Berkas hanya dapat diunduh oleh pihak yang berwenang.</p>
+                            @error('cv')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
-                    <!-- Tombol Aksi (Bagian D) -->
-                    <div class="flex items-center gap-3 pt-2">
-                        <button 
-                            type="submit" 
-                            class="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition shadow-sm"
-                        >
+                    <div class="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
+
+                        <div>
+                            <h2 class="text-lg font-bold text-emerald-800">Pesan Lamaran (Wajib)</h2>
+
+                            <p class="text-gray-500 text-xs mt-1">
+                                Sampaikan alasan dan ketertarikan Anda terhadap pekerjaan ini kepada penyedia pekerjaan.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label for="pesan_lamaran"
+                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                Pesan untuk Penyedia Pekerjaan <span class="text-red-500">*</span>
+                            </label>
+
+                            <textarea
+                                name="pesan_lamaran"
+                                id="pesan_lamaran"
+                                rows="6"
+                                maxlength="3000"
+                                required
+                                placeholder="Halo, saya tertarik untuk melamar pekerjaan ini. Saya memiliki kemampuan dan pengalaman yang sesuai dengan kebutuhan pekerjaan..."
+                                class="w-full px-4 py-3 rounded-lg border @error('pesan_lamaran') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                            >{{ old('pesan_lamaran') }}</textarea>
+
+                            @error('pesan_lamaran')
+                                <p class="text-red-600 text-xs mt-1 font-medium">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+
+                            <p class="text-xs text-gray-400 mt-2">
+                                Pesan ini akan diterima oleh penyedia pekerjaan bersama pengajuan lamaran Anda.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- Informasi Pengajuan -->
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl text-xs flex items-start gap-2.5">
+                        <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+
+                        <span>
+                            Pastikan lowongan yang dipilih sudah sesuai. Anda hanya dapat mengirim satu lamaran untuk setiap lowongan pekerjaan.
+                        </span>
+                    </div>
+
+                    <!-- Tombol Aksi -->
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+
+                        <button
+                            type="submit"
+                            class="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition shadow-sm">
                             Kirim Lamaran
                         </button>
-                        <a 
-                            href="{{ route('jobs.show', $job->id) }}" 
-                            class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold px-6 py-2.5 rounded-lg text-sm transition"
-                        >
+
+                        <a href="{{ route('jobs.show', $job->id_lowongan) }}"
+                           class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold px-6 py-2.5 rounded-lg text-sm transition">
                             Kembali
                         </a>
+
                     </div>
+
                 </form>
+
             @endif
 
         </div>
     </main>
 
-    <!-- JavaScript Interaktif untuk Dropzone Upload Berkas -->
-    <script>
-        const dropzone = document.getElementById('dropzone');
-        const cvInput = document.getElementById('cv_input');
-        const filePreview = document.getElementById('file_preview');
-        const fileName = document.getElementById('file_name');
-        const fileSize = document.getElementById('file_size');
-        const removeFileBtn = document.getElementById('remove_file_btn');
+<script>
+    const birthDateInput = document.getElementById('tanggal_lahir');
+    const ageInput = document.getElementById('umur');
+    const cvInput = document.getElementById('cv');
+    const cvFileName = document.getElementById('cv-file-name');
+    const savedCvMessage = @json($user->cv ? 'CV tersimpan. Pilih berkas baru untuk menggantinya.' : 'Belum ada CV yang dipilih.');
 
-        if (dropzone && cvInput) {
-            dropzone.addEventListener('click', (e) => {
-                if (e.target !== removeFileBtn) {
-                    cvInput.click();
-                }
-            });
-
-            dropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzone.classList.add('border-emerald-600', 'bg-emerald-100/50');
-            });
-
-            dropzone.addEventListener('dragleave', () => {
-                dropzone.classList.remove('border-emerald-600', 'bg-emerald-100/50');
-            });
-
-            dropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropzone.classList.remove('border-emerald-600', 'bg-emerald-100/50');
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    cvInput.files = e.dataTransfer.files;
-                    handleFileSelection();
-                }
-            });
-
-            cvInput.addEventListener('change', handleFileSelection);
-
-            function handleFileSelection() {
-                if (cvInput.files && cvInput.files[0]) {
-                    const file = cvInput.files[0];
-                    fileName.textContent = file.name;
-                    fileSize.textContent = `(${ (file.size / 1024 / 1024).toFixed(2) } MB)`;
-                    filePreview.classList.remove('hidden');
-                } else {
-                    filePreview.classList.add('hidden');
-                }
+    if (birthDateInput && ageInput) {
+        const updateAge = () => {
+            if (!birthDateInput.value) {
+                ageInput.value = '';
+                return;
             }
 
-            if (removeFileBtn) {
-                removeFileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    cvInput.value = '';
-                    filePreview.classList.add('hidden');
-                });
-            }
-        }
-    </script>
+            const [year, month, day] = birthDateInput.value.split('-').map(Number);
+            const today = new Date();
+            let age = today.getFullYear() - year;
 
+            if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) {
+                age--;
+            }
+
+            ageInput.value = age >= 0 ? age : '';
+        };
+
+        birthDateInput.addEventListener('input', updateAge);
+        birthDateInput.addEventListener('change', updateAge);
+        updateAge();
+    }
+
+    if (cvInput && cvFileName) {
+        cvInput.addEventListener('change', () => {
+            cvFileName.textContent = cvInput.files.length > 0
+                ? cvInput.files[0].name
+                : savedCvMessage;
+        });
+    }
+</script>
 </body>
 </html>

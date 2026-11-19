@@ -15,19 +15,38 @@
             <span class="text-xl font-bold text-emerald-800">bisaKerja</span>
         </div>
 
+        @php($role = auth()->user()?->role)
         <nav class="space-y-4 text-gray-600 font-medium">
-            <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl">
-                <span>Lowongan Kerja</span>
-            </a>
-            <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Lamaran Saya</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Chat</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Profil</span>
-            </a>
+            @if ($role === 'pencari_kerja')
+                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl bg-emerald-50 p-3 font-bold text-emerald-700">
+                    <span>Beranda / Lowongan Kerja</span>
+                </a>
+                <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">
+                    <span>Lamaran Saya</span>
+                </a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
+            @elseif ($role === 'penyedia_pekerjaan')
+                <a href="{{ route('home') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
+                <a href="{{ route('employer.vacancies.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Lowongan Saya</a>
+                <a href="{{ route('home', ['view' => 'pelamar-saya']) }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Pelamar Saya</a>
+                <a href="{{ route('provider.biodata') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Profil</a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+            @elseif ($role === 'admin')
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Dashboard Admin</a>
+                <a href="{{ route('admin.verifikasi') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Verifikasi Akun</a>
+                <a href="{{ route('admin.pengguna') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Manajemen Pengguna</a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Kategori (Belum tersedia)</span>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Laporan (Belum tersedia)</span>
+            @else
+                <a href="{{ route('welcome') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
+                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Cari Lowongan</a>
+                <a href="{{ route('login') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Masuk</a>
+                <a href="{{ route('register.role') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Daftar</a>
+            @endif
+            @if (auth()->check())
+                @include('components.logout-form', ['buttonClass' => 'w-full rounded-xl p-3 text-left hover:bg-gray-100'])
+            @endif
         </nav>
     </aside>
 
@@ -74,6 +93,19 @@
                                 </div>
                             </div>
 
+                            <div class="flex-1">
+                                <select name="id_kategori"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700">
+                                    <option value="">Semua kategori</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id_kategori }}"
+                                            @selected((string) request('id_kategori') === (string) $category->id_kategori)>
+                                            {{ $category->nama_kategori }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Tombol Cari -->
                             <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-xl transition duration-200">
                                 Cari
@@ -81,7 +113,7 @@
                         </div>
                     </form>
 
-                    @if(request('keyword') || request('location'))
+                    @if(request('keyword') || request('location') || request('id_kategori'))
                         <div class="pt-2">
                             <a href="{{ route('jobs.index') }}" class="text-xs text-emerald-200 hover:text-white underline">
                                 ↻ Reset Filter Pencarian
@@ -102,28 +134,46 @@
                     </div>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($jobs as $job)
-                            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-                                <div class="space-y-2">
-                                    <h3 class="font-bold text-gray-800 text-lg leading-snug">{{ $job->title }}</h3>
-                                    <p class="text-xs text-gray-500 font-medium">
-                                        📍 {{ $job->location }} | {{ $job->company }}
-                                    </p>
-                                    <p class="text-sm text-gray-600 line-clamp-2 pt-2">
-                                        {{ $job->description }}
-                                    </p>
-                                </div>
+                        
+@foreach($jobs as $job)
+    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
 
-                                <div class="pt-4 border-t border-gray-100 space-y-3">
-                                    <div class="text-emerald-700 font-bold text-base">
-                                        Rp {{ number_format($job->salary_min) }} @if($job->salary_max) - Rp {{ number_format($job->salary_max) }} @endif
-                                    </div>
-                                    <a href="{{ route('jobs.show', $job->id) }}" class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
-                                        Lihat Detail
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
+        <div class="space-y-2">
+            <h3 class="font-bold text-gray-800 text-lg leading-snug">
+                {{ $job->judul }}
+            </h3>
+
+            <p class="text-xs text-gray-500 font-medium">
+                📍 {{ $job->lokasi }}
+                @if($job->employer)
+                    | {{ $job->employer->nama }}
+                @endif
+            </p>
+
+            @if($job->kategori)
+                <p class="text-xs text-emerald-700 font-semibold">
+                    {{ $job->kategori->nama_kategori }}
+                </p>
+            @endif
+
+            <p class="text-sm text-gray-600 line-clamp-2 pt-2">
+                {{ $job->deskripsi }}
+            </p>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 space-y-3">
+            <div class="text-emerald-700 font-bold text-base">
+                Rp {{ number_format((float) $job->upah, 0, ',', '.') }}
+            </div>
+
+            <a href="{{ route('jobs.show', $job->id_lowongan) }}"
+                class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
+                Lihat Detail
+            </a>
+        </div>
+    </div>
+@endforeach
+
                     </div>
                 @endif
             </div>

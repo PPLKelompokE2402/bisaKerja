@@ -76,7 +76,7 @@
         <div id="applicants-detail-content" hidden>
             <img id="applicants-photo" alt="Foto profil pelamar" width="80" height="80" hidden>
             <dl id="applicants-detail-fields"></dl>
-            <button id="applicants-cv" type="button" class="applicants-button" hidden>Unduh CV (PDF)</button>
+            <button id="applicants-cv" type="button" class="applicants-button" hidden>Unduh CV</button>
         </div>
     </dialog>
     </div>

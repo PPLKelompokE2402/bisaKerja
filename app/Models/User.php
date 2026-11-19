@@ -74,13 +74,32 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasMany<JobVacancy, $this>
+     * Relasi ke lowongan pekerjaan yang dibuat penyedia.
      */
     public function jobVacancies(): HasMany
     {
-        return $this->hasMany(JobVacancy::class, 'id_penyedia', 'id_pengguna');
+        return $this->hasMany(
+            JobVacancy::class,
+            'id_penyedia',
+            'id_pengguna'
+        );
     }
 
+    /**
+     * Relasi ke lamaran yang dibuat oleh pencari kerja.
+     */
+    public function lamaranSaya(): HasMany
+    {
+        return $this->hasMany(
+            Lamaran::class,
+            'id_pencari',
+            'id_pengguna'
+        );
+    }
+
+    /**
+     * Determine whether the user is an employer.
+     */
     public function isEmployer(): bool
     {
         return ($this->role ?? '') === 'penyedia_pekerjaan';
@@ -90,6 +109,7 @@ class User extends Authenticatable
     {
         return [
             'kata_sandi' => 'hashed',
+            'tanggal_lahir' => 'date',
             'tanggal_verifikasi' => 'datetime',
             'dibuat_pada' => 'datetime',
             'diperbarui_pada' => 'datetime',

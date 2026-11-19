@@ -531,7 +531,7 @@
         const token = sessionStorage.getItem('auth_token');
 
         if (!token) {
-            window.location.replace('/login');
+            window.location.replace(@json(route('login')));
             return;
         }
 
@@ -560,7 +560,7 @@
 
             if (response.status === 401) {
                 sessionStorage.clear();
-                window.location.replace('/login');
+                window.location.replace(@json(route('login')));
                 return;
             }
 
@@ -753,9 +753,7 @@
         const cv = document.getElementById('detailCV');
 
         if (user.cv) {
-            cv.href = user.cv.startsWith('http')
-                ? user.cv
-                : `/storage/${user.cv}`;
+            cv.href = user.cv;
 
             cv.style.display = 'inline-block';
         } else {
