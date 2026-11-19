@@ -74,6 +74,19 @@
                                 </div>
                             </div>
 
+                            <div class="flex-1">
+                                <select name="id_kategori"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700">
+                                    <option value="">Semua kategori</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id_kategori }}"
+                                            @selected((string) request('id_kategori') === (string) $category->id_kategori)>
+                                            {{ $category->nama_kategori }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Tombol Cari -->
                             <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-xl transition duration-200">
                                 Cari
@@ -81,7 +94,7 @@
                         </div>
                     </form>
 
-                    @if(request('keyword') || request('location'))
+                    @if(request('keyword') || request('location') || request('id_kategori'))
                         <div class="pt-2">
                             <a href="{{ route('jobs.index') }}" class="text-xs text-emerald-200 hover:text-white underline">
                                 ↻ Reset Filter Pencarian

@@ -39,17 +39,17 @@
             </form>
         </div>
 
-        <div class="mt-4 flex flex-col gap-4 rounded-xl border border-red-200 bg-white px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mt-4 flex flex-col gap-4 rounded-xl border border-amber-200 bg-white px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-red-700">Hapus lowongan</h2>
-                <p class="text-sm text-gray-500">Lowongan akan dihapus permanen dan tidak bisa dikembalikan.</p>
+                <h2 class="font-semibold text-amber-800">Tutup lowongan</h2>
+                <p class="text-sm text-gray-500">Permintaan ini akan menutup lowongan dan mempertahankan data serta riwayat lamaran.</p>
             </div>
             <form method="POST" action="{{ route('employer.vacancies.destroy', $vacancy) }}"
-                data-confirm="Yakin ingin menghapus lowongan ini?">
+                data-confirm="Yakin ingin menutup lowongan ini dan mempertahankan seluruh riwayatnya?">
                 @csrf
                 @method('DELETE')
                 <button type="submit"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-red-700">Hapus Lowongan</button>
+                    class="rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-amber-800">Tutup Lowongan</button>
             </form>
         </div>
     </div>

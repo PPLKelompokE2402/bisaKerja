@@ -1,19 +1,29 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\JobVacancy;
-use App\Models\Job;
+use App\Models\KategoriPekerjaan;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class JobController extends Controller
 {
-  public function index(Request $request)
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'id_kategori' => [
+                'nullable',
+                'integer',
+                Rule::exists('kategori_pekerjaan', 'id_kategori')->where('status_kategori', 'aktif'),
+            ],
+        ]);
+
         $query = JobVacancy::with(['employer', 'kategori'])
             ->where('status_lowongan', 'aktif')
             ->whereHas('employer', function ($q) {
                 $q->where('status_akun', 'aktif')
-                  ->where('role', 'penyedia_pekerjaan');
+                    ->where('role', 'penyedia_pekerjaan');
             });
 
         // Pencarian berdasarkan judul pekerjaan
@@ -22,9 +32,9 @@ class JobController extends Controller
 
             $query->where(function ($q) use ($keyword) {
                 $q->where('judul', 'like', "%{$keyword}%")
-                  ->orWhereHas('employer', function ($employerQuery) use ($keyword) {
-                      $employerQuery->where('nama', 'like', "%{$keyword}%");
-                  });
+                    ->orWhereHas('employer', function ($employerQuery) use ($keyword) {
+                        $employerQuery->where('nama', 'like', "%{$keyword}%");
+                    });
             });
         }
 
@@ -35,9 +45,14 @@ class JobController extends Controller
             $query->where('lokasi', 'like', "%{$location}%");
         }
 
-        $jobs = $query->latest('dibuat_pada')->paginate(9)->withQueryString();
+        if (isset($validated['id_kategori'])) {
+            $query->where('id_kategori', $validated['id_kategori']);
+        }
 
-        return view('jobs.index', compact('jobs'));
+        $jobs = $query->latest('dibuat_pada')->paginate(9)->withQueryString();
+        $categories = KategoriPekerjaan::where('status_kategori', 'aktif')->orderBy('nama_kategori')->get();
+
+        return view('jobs.index', compact('jobs', 'categories'));
     }
 
     /**
@@ -49,7 +64,7 @@ class JobController extends Controller
             ->where('status_lowongan', 'aktif')
             ->whereHas('employer', function ($q) {
                 $q->where('status_akun', 'aktif')
-                  ->where('role', 'penyedia_pekerjaan');
+                    ->where('role', 'penyedia_pekerjaan');
             })
             ->findOrFail($id);
 

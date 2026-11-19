@@ -1,18 +1,18 @@
 
 <?php
-use Illuminate\Http\Request;
-use App\Models\JobVacancy;
 use App\Http\Controllers\Employer\JobVacancyController;
 use App\Http\Controllers\Employer\JobVacancyStatusController;
-use App\Http\Controllers\ProviderController;
-use App\Http\Controllers\JobController;
 use App\Http\Controllers\JobApplicationController;
-use App\Http\Middleware\UseDemoEmployer;
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
+use App\Models\JobVacancy;
+use App\Models\KategoriPekerjaan;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 Route::post('/auth/session', function (Request $request) {
     $validated = $request->validate([
@@ -54,11 +54,18 @@ Route::view('/lamaran-saya', 'seeker.applications-entry')->name('seeker.applicat
 Route::get('/', function () {
     $jobs = JobVacancy::with(['employer', 'kategori'])
         ->where('status_lowongan', 'aktif')
+        ->whereHas('employer', function ($employers) {
+            $employers->where('status_akun', 'aktif')
+                ->where('role', 'penyedia_pekerjaan');
+        })
         ->latest('dibuat_pada')
         ->take(3)
         ->get();
+    $categories = KategoriPekerjaan::where('status_kategori', 'aktif')
+        ->orderBy('nama_kategori')
+        ->get();
 
-    return view('jobs.welcome', compact('jobs'));
+    return view('jobs.welcome', compact('jobs', 'categories'));
 })->name('welcome');
 
 // Daftar dan detail lowongan
@@ -78,9 +85,16 @@ Route::middleware(['web', EnsureJobSeekerAuthenticated::class])->group(function 
 });
 
 // Biodata penyedia pekerjaan
-Route::get('/biodata-penyedia', function () {
-    return view('auth.biodata-penyedia');
-})->name('provider.biodata');
+Route::middleware(['auth', 'role:penyedia_pekerjaan'])->group(function () {
+    Route::get('/biodata-penyedia', [ProviderController::class, 'profile'])
+        ->name('provider.biodata');
+
+    Route::get('/biodata-penyedia/edit', [ProviderController::class, 'edit'])
+        ->name('provider.profile.edit');
+
+    Route::put('/biodata-penyedia', [ProviderController::class, 'store'])
+        ->name('provider.profile.update');
+});
 
 Route::post('/biodata-penyedia', [ProviderController::class, 'store'])
     ->name('provider.biodata.store');
@@ -103,23 +117,26 @@ Route::get('/home', function () {
     return redirect()->route('employer.vacancies.index');
 })->name('home');
 
-
 Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
 Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');
 
 // Halaman Admin
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'role:admin'])
+    ->group(function () {
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+        Route::get('/verifikasi', function () {
+            return view('admin.verifikasi');
+        })->name('verifikasi');
 
-Route::get('/admin/verifikasi', function () {
-    return view('admin.verifikasi');
-})->name('admin.verifikasi');
-
-Route::get('/admin/pengguna', function () {
-    return view('admin.pengguna');
-})->name('admin.pengguna');
+        Route::get('/pengguna', function () {
+            return view('admin.pengguna');
+        })->name('pengguna');
+    });
 
 // Pengelolaan lowongan oleh pemberi kerja
 Route::prefix('pemberi-kerja')

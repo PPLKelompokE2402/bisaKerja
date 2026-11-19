@@ -15,13 +15,11 @@ class JobApplicationController extends Controller
      */
     public function create($id)
     {
-        $job = JobVacancy::with(['employer', 'kategori'])
-            ->where('status_lowongan', 'aktif')
-            ->findOrFail($id);
+        $job = $this->availableVacancy($id)->load(['employer', 'kategori']);
 
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
@@ -41,13 +39,12 @@ class JobApplicationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $job = JobVacancy::where('status_lowongan', 'aktif')
-            ->findOrFail($id);
+        $job = $this->availableVacancy($id);
 
         // Cegah pengguna melamar lowongan yang sama lebih dari sekali.
         $alreadyApplied = Lamaran::where('id_pencari', $user->id_pengguna)
@@ -67,8 +64,8 @@ class JobApplicationController extends Controller
 
         DB::transaction(function () use ($validated, $user, $job) {
             Lamaran::create([
-                'id_lowongan'   => $job->id_lowongan,
-                'id_pencari'    => $user->id_pengguna,
+                'id_lowongan' => $job->id_lowongan,
+                'id_pencari' => $user->id_pengguna,
                 'pesan_lamaran' => $validated['pesan_lamaran'] ?? null,
                 // status_lamaran dan status_pekerjaan
                 // menggunakan nilai default dari database.
@@ -77,5 +74,16 @@ class JobApplicationController extends Controller
 
         return redirect()->route('jobs.apply', $job->id_lowongan)
             ->with('success', 'Lamaran pekerjaan berhasil dikirimkan!');
+    }
+
+    private function availableVacancy(int|string $id): JobVacancy
+    {
+        return JobVacancy::query()
+            ->where('status_lowongan', 'aktif')
+            ->whereHas('employer', function ($employers): void {
+                $employers->where('role', 'penyedia_pekerjaan')
+                    ->where('status_akun', 'aktif');
+            })
+            ->findOrFail($id);
     }
 }

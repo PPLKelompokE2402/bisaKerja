@@ -34,6 +34,94 @@ class SeekerApplicationTest extends TestCase
             ->assertSee('seeker-applications-entry.js')->assertDontSee('<table>', false);
     }
 
+    public function test_guest_cannot_open_or_submit_a_job_application(): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+
+        $this->get(route('jobs.apply', $vacancy->id_lowongan))
+            ->assertRedirectToRoute('login');
+        $this->post(route('jobs.apply.store', $vacancy->id_lowongan), ['pesan_lamaran' => 'Saya tertarik.'])
+            ->assertRedirectToRoute('login');
+
+        $this->assertDatabaseCount('lamaran', 0);
+    }
+
+    public function test_active_job_seeker_can_open_the_application_form(): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+        $jobSeeker = User::factory()->create([
+            'role' => 'pencari_kerja',
+            'status_akun' => 'aktif',
+        ]);
+
+        $this->actingAs($jobSeeker)
+            ->get(route('jobs.apply', $vacancy->id_lowongan))
+            ->assertOk()
+            ->assertViewIs('jobs.apply')
+            ->assertViewHas('job', $vacancy);
+    }
+
+    public function test_suspended_job_seeker_cannot_open_the_application_form(): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+        $jobSeeker = User::factory()->create([
+            'role' => 'pencari_kerja',
+            'status_akun' => 'ditangguhkan',
+        ]);
+
+        $this->actingAs($jobSeeker)
+            ->get(route('jobs.apply', $vacancy->id_lowongan))
+            ->assertForbidden();
+    }
+
+    #[DataProvider('restrictedRoles')]
+    public function test_other_roles_cannot_open_the_application_form(string $role): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+        $user = User::factory()->create(['role' => $role]);
+
+        $this->actingAs($user)
+            ->get(route('jobs.apply', $vacancy->id_lowongan))
+            ->assertForbidden();
+    }
+
+    public function test_non_seekers_cannot_submit_a_job_application(): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+        $provider = User::factory()->employer()->create();
+
+        $this->actingAs($provider)
+            ->post(route('jobs.apply.store', $vacancy->id_lowongan), ['pesan_lamaran' => 'Saya tertarik.'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('lamaran', 0);
+    }
+
+    public function test_applications_are_rejected_for_vacancies_from_inactive_providers(): void
+    {
+        $provider = User::factory()->employer()->create(['status_akun' => 'ditangguhkan']);
+        $vacancy = JobVacancy::factory()->create(['id_penyedia' => $provider->getKey()]);
+        $jobSeeker = User::factory()->create();
+
+        $this->actingAs($jobSeeker)
+            ->post(route('jobs.apply.store', $vacancy->id_lowongan), ['pesan_lamaran' => 'Saya tertarik.'])
+            ->assertNotFound();
+
+        $this->assertDatabaseCount('lamaran', 0);
+    }
+
+    public function test_closed_vacancies_cannot_receive_new_applications(): void
+    {
+        $vacancy = JobVacancy::factory()->closed()->create();
+        $jobSeeker = User::factory()->create();
+
+        $this->actingAs($jobSeeker)
+            ->post(route('jobs.apply.store', $vacancy->id_lowongan), ['pesan_lamaran' => 'Saya tertarik.'])
+            ->assertNotFound();
+
+        $this->assertDatabaseCount('lamaran', 0);
+    }
+
     public function test_guests_cannot_fetch_either_protected_endpoint(): void
     {
         $this->getJson(self::ENDPOINT)->assertUnauthorized();
@@ -87,20 +175,20 @@ class SeekerApplicationTest extends TestCase
 
     public function test_vacancy_status_and_completion_date_alone_do_not_mark_the_application_as_completed(): void
     {
-        $application = Lamaran::factory()->create(['status_lamaran' => 'ditolak', 'status_pekerjaan' => null, 'tanggal_selesai' => now()]);
+        $application = Lamaran::factory()->create(['status_lamaran' => 'ditolak', 'status_pekerjaan' => 'belum_mulai', 'tanggal_selesai' => now()]);
         $application->lowongan->update(['status_lowongan' => 'selesai']);
         Sanctum::actingAs($application->pencari);
         $this->getJson(self::ENDPOINT)->assertOk()->assertJsonCount(1, 'applications.data')->assertJsonCount(0, 'history.data')
             ->assertJsonPath('applications.data.0.status_label', 'Ditolak');
     }
 
-    public function test_other_users_applications_cannot_leak_through_null_or_ongoing_work_statuses_or_query_parameters(): void
+    public function test_other_users_applications_cannot_leak_through_nonfinished_work_statuses_or_query_parameters(): void
     {
         $user = User::factory()->create();
-        $own = Lamaran::factory()->create(['id_pencari' => $user->getKey(), 'status_pekerjaan' => null]);
+        $own = Lamaran::factory()->create(['id_pencari' => $user->getKey(), 'status_pekerjaan' => 'belum_mulai']);
         $ownHistory = Lamaran::factory()->create(['id_pencari' => $user->getKey(), 'status_pekerjaan' => 'selesai']);
         $other = User::factory()->create();
-        foreach ([null, 'berjalan', 'selesai'] as $status) {
+        foreach (['belum_mulai', 'berlangsung', 'selesai'] as $status) {
             Lamaran::factory()->create(['id_pencari' => $other->getKey(), 'status_pekerjaan' => $status]);
         }
         Sanctum::actingAs($user);
@@ -109,12 +197,12 @@ class SeekerApplicationTest extends TestCase
             ->assertJsonPath('applications.data.0.id', $own->getKey())->assertJsonPath('history.data.0.id', $ownHistory->getKey());
     }
 
-    public function test_ongoing_work_and_unrecognized_application_statuses_are_preserved(): void
+    public function test_ongoing_work_does_not_replace_the_application_status(): void
     {
-        $application = Lamaran::factory()->create(['status_lamaran' => 'ditinjau', 'status_pekerjaan' => 'berjalan']);
+        $application = Lamaran::factory()->create(['status_lamaran' => 'menunggu', 'status_pekerjaan' => 'berlangsung']);
         Sanctum::actingAs($application->pencari);
         $this->getJson(self::ENDPOINT)->assertOk()->assertJsonCount(1, 'applications.data')->assertJsonCount(0, 'history.data')
-            ->assertJsonPath('applications.data.0.status', 'ditinjau')->assertJsonPath('applications.data.0.status_label', 'ditinjau');
+            ->assertJsonPath('applications.data.0.status', 'menunggu')->assertJsonPath('applications.data.0.status_label', 'Menunggu');
     }
 
     public function test_empty_account_returns_two_empty_collections_with_no_dummy_rows(): void

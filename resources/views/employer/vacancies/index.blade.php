@@ -28,7 +28,7 @@
                                 <p class="font-semibold text-gray-900">{{ $vacancy->judul }}</p>
                                 <p class="mt-1 text-xs text-gray-500">{{ $vacancy->lokasi }}</p>
                             </td>
-                            <td class="px-5 py-4 text-gray-800">{{ $vacancy->applicants_count }} pelamar</td>
+                            <td class="px-5 py-4 text-gray-800">{{ $vacancy->lamaran_count }} pelamar</td>
                             <td class="px-5 py-4">
                                 <span @class([
                                     'inline-block w-20 rounded border px-2 py-1 text-center text-xs',

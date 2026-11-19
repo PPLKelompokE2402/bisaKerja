@@ -2,36 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ProviderController extends Controller
 {
-    public function create()
+    public function profile(Request $request): View
+    {
+        $user = $this->authenticatedProvider($request);
+
+        if (! $this->hasCompleteBiodata($user)) {
+            return view('auth.biodata-penyedia', [
+                'user' => $user,
+                'editing' => false,
+            ]);
+        }
+
+        $statusVerifikasi = match ($user->status_akun) {
+            'aktif' => 'Aktif / terverifikasi',
+            'menunggu_verifikasi' => 'Menunggu verifikasi',
+            'belum_lengkap' => 'Biodata belum lengkap',
+            'ditangguhkan' => 'Ditangguhkan',
+            'ditolak' => 'Ditolak',
+            default => 'Status tidak diketahui',
+        };
+
+        return view('provider.profile', compact('user', 'statusVerifikasi'));
+    }
+
+    public function edit(Request $request): View
+    {
+        return view('auth.biodata-penyedia', [
+            'user' => $this->authenticatedProvider($request),
+            'editing' => true,
+        ]);
+    }
+
+    public function create(): View
     {
         return view('auth.provider-biodata');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
-        // Ambil pengguna yang login melalui Sanctum
+        // Gunakan pengguna dari guard request saat ini.
         $user = $request->user();
 
-        if (!$user || $user->role !== 'penyedia_pekerjaan') {
+        if (! $user || $user->role !== 'penyedia_pekerjaan') {
             return response()->json([
-                'message' => 'Akses hanya untuk penyedia pekerjaan.'
+                'message' => 'Akses hanya untuk penyedia pekerjaan.',
             ], 403);
         }
 
         if ($user->status_akun === 'ditangguhkan') {
             return response()->json([
-                'message' => 'Akun Anda sedang ditangguhkan.'
+                'message' => 'Akun Anda sedang ditangguhkan.',
             ], 403);
         }
 
         // Validasi biodata dan file
         $validated = $request->validate([
-            'nama' => ['required', 'string', 'max:255'],
+            'nama' => ['required', 'string', 'max:100'],
             'nomor_telepon' => ['required', 'string', 'max:20'],
             'alamat' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['nullable', 'in:Laki-laki,Perempuan'],
@@ -67,6 +102,11 @@ class ProviderController extends Controller
 
         $oldFoto = $user->foto_profil;
         $oldDokumen = $user->dokumen_verifikasi;
+        $statusAkun = $user->status_akun;
+
+        if ($statusAkun !== 'aktif' || $request->hasFile('dokumen_verifikasi')) {
+            $statusAkun = 'menunggu_verifikasi';
+        }
 
         // Simpan foto baru jika ada
         if ($request->hasFile('foto_profil')) {
@@ -98,7 +138,7 @@ class ProviderController extends Controller
             'dokumen_verifikasi' => $validated['dokumen_verifikasi']
                 ?? $oldDokumen,
 
-            'status_akun' => 'menunggu_verifikasi',
+            'status_akun' => $statusAkun,
         ]);
 
         try {
@@ -139,8 +179,16 @@ class ProviderController extends Controller
             Storage::disk('public')->delete($oldDokumen);
         }
 
+        $message = $statusAkun === 'aktif'
+            ? 'Biodata berhasil diperbarui.'
+            : 'Biodata berhasil disimpan. Akun Anda sedang menunggu verifikasi Admin.';
+
+        if ($request->routeIs('provider.profile.update')) {
+            return redirect()->route('provider.biodata')->with('status', $message);
+        }
+
         return response()->json([
-            'message' => 'Biodata berhasil disimpan. Akun Anda sedang menunggu verifikasi Admin.',
+            'message' => $message,
             'user' => [
                 'id_pengguna' => $user->id_pengguna,
                 'nama' => $user->nama,
@@ -150,5 +198,35 @@ class ProviderController extends Controller
                 'dokumen_verifikasi' => $user->dokumen_verifikasi,
             ],
         ]);
+    }
+
+    private function authenticatedProvider(Request $request): User
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
+    }
+
+    private function hasCompleteBiodata(User $user): bool
+    {
+        if ($user->status_akun === 'belum_lengkap') {
+            return false;
+        }
+
+        foreach ([
+            $user->nama,
+            $user->nomor_telepon,
+            $user->alamat,
+            $user->jenis_pemberi,
+            $user->dokumen_verifikasi,
+        ] as $value) {
+            if (blank($value)) {
+                return false;
+            }
+        }
+
+        return $user->jenis_pemberi !== 'Usaha/UMKM' || filled($user->nama_usaha);
     }
 }
