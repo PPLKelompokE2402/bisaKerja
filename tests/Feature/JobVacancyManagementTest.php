@@ -6,6 +6,8 @@ use App\Enums\VacancyCategory;
 use App\Enums\VacancyDuration;
 use App\Enums\VacancyStatus;
 use App\Models\JobVacancy;
+use App\Models\KategoriPekerjaan;
+use App\Models\Lamaran;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,6 +33,21 @@ class JobVacancyManagementTest extends TestCase
             'notes' => 'Sapu dan pengki disediakan.',
             ...$overrides,
         ];
+    }
+
+    public function test_provider_listing_contains_only_their_own_canonical_vacancies(): void
+    {
+        $provider = User::factory()->employer()->create();
+        JobVacancy::factory()->create([
+            'id_penyedia' => $provider->getKey(),
+            'judul' => 'Lowongan milik saya',
+        ]);
+        JobVacancy::factory()->create(['judul' => 'Lowongan milik penyedia lain']);
+
+        $this->actingAs($provider)->get(route('employer.vacancies.index'))
+            ->assertOk()
+            ->assertSeeText('Lowongan milik saya')
+            ->assertDontSeeText('Lowongan milik penyedia lain');
     }
 
     public function test_employer_sees_only_their_own_vacancies(): void
@@ -89,9 +106,16 @@ class JobVacancyManagementTest extends TestCase
     public function test_job_seeker_cannot_post_a_vacancy(): void
     {
         $jobSeeker = User::factory()->create();
+        $category = KategoriPekerjaan::factory()->create();
 
         $this->actingAs($jobSeeker)
-            ->post(route('employer.vacancies.store'), $this->validPayload())
+            ->post(route('employer.vacancies.store'), [
+                'judul' => 'Lowongan ilegal',
+                'id_kategori' => $category->getKey(),
+                'lokasi' => 'Bandung',
+                'upah' => 80000,
+                'deskripsi' => 'Deskripsi lowongan',
+            ])
             ->assertForbidden();
 
         $this->assertDatabaseCount('job_vacancies', 0);
@@ -174,25 +198,56 @@ class JobVacancyManagementTest extends TestCase
 
     public function test_employer_cannot_update_another_employers_vacancy(): void
     {
-        $vacancy = JobVacancy::factory()->create(['title' => 'Judul asli']);
+        $vacancy = JobVacancy::factory()->create(['judul' => 'Judul asli']);
         $otherEmployer = User::factory()->employer()->create();
+        $category = KategoriPekerjaan::factory()->create();
 
         $this->actingAs($otherEmployer)
-            ->put(route('employer.vacancies.update', $vacancy), $this->validPayload(['title' => 'Diubah orang lain']))
+            ->put(route('employer.vacancies.update', $vacancy), [
+                'judul' => 'Diubah orang lain',
+                'id_kategori' => $category->getKey(),
+                'lokasi' => 'Bandung',
+                'upah' => 80000,
+                'deskripsi' => 'Deskripsi lowongan',
+            ])
             ->assertNotFound();
 
-        $this->assertSame('Judul asli', $vacancy->fresh()->title);
+        $this->assertSame('Judul asli', $vacancy->fresh()->judul);
     }
 
     public function test_employer_can_delete_their_vacancy(): void
+    {
+        $vacancy = JobVacancy::factory()->create();
+        $application = Lamaran::factory()->create(['id_lowongan' => $vacancy->id_lowongan]);
+
+        $response = $this->actingAs($vacancy->employer)->delete(route('employer.vacancies.destroy', $vacancy));
+
+        $response->assertRedirectToRoute('employer.vacancies.index');
+        $response->assertSessionHas('status', 'Lowongan berhasil ditutup. Data dan riwayat lamaran tetap disimpan.');
+        $this->assertDatabaseHas('lowongan', [
+            'id_lowongan' => $vacancy->id_lowongan,
+            'status_lowongan' => 'ditutup',
+        ]);
+        $this->assertDatabaseHas('lamaran', ['id_lamaran' => $application->id_lamaran]);
+        $this->assertSame(1, $vacancy->fresh()->lamaran()->count());
+        $this->actingAs($vacancy->employer)
+            ->get(route('employer.vacancies.index'))
+            ->assertOk()
+            ->assertSeeText('1 pelamar');
+    }
+
+    public function test_delete_request_closes_a_vacancy_without_applications(): void
     {
         $vacancy = JobVacancy::factory()->create();
 
         $response = $this->actingAs($vacancy->employer)->delete(route('employer.vacancies.destroy', $vacancy));
 
         $response->assertRedirectToRoute('employer.vacancies.index');
-        $response->assertSessionHas('status', 'Lowongan berhasil dihapus.');
-        $this->assertModelMissing($vacancy);
+        $response->assertSessionHas('status', 'Lowongan berhasil ditutup. Data dan riwayat lamaran tetap disimpan.');
+        $this->assertDatabaseHas('lowongan', [
+            'id_lowongan' => $vacancy->id_lowongan,
+            'status_lowongan' => 'ditutup',
+        ]);
     }
 
     public function test_employer_cannot_delete_another_employers_vacancy(): void
@@ -251,6 +306,6 @@ class JobVacancyManagementTest extends TestCase
             ->patch(route('employer.vacancies.status.update', $vacancy), ['status' => VacancyStatus::Closed->value])
             ->assertNotFound();
 
-        $this->assertSame(VacancyStatus::Open, $vacancy->fresh()->status);
+        $this->assertSame('aktif', $vacancy->fresh()->status_lowongan);
     }
 }

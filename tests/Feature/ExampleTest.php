@@ -14,6 +14,6 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertRedirect(route('employer.vacancies.index'));
+        $response->assertOk()->assertViewIs('jobs.welcome');
     }
 }

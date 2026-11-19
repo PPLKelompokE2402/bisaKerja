@@ -5,7 +5,7 @@
 
         <div class="mt-8 mb-4 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-brand-700">Lowongan Saya</h2>
-            <button type="button" data-dialog-open="create-vacancy-dialog"
+            <button type="button" id="btn-create-vacancy"
                 class="rounded-lg border border-brand-700 bg-white px-4 py-2 text-sm text-brand-700 transition hover:bg-brand-100">
                 + Tambah Lowongan
             </button>
@@ -28,7 +28,7 @@
                                 <p class="font-semibold text-gray-900">{{ $vacancy->judul }}</p>
                                 <p class="mt-1 text-xs text-gray-500">{{ $vacancy->lokasi }}</p>
                             </td>
-                            <td class="px-5 py-4 text-gray-800">{{ $vacancy->applicants_count }} pelamar</td>
+                            <td class="px-5 py-4 text-gray-800">{{ $vacancy->lamaran_count }} pelamar</td>
                             <td class="px-5 py-4">
                                 <span @class([
                                     'inline-block w-20 rounded border px-2 py-1 text-center text-xs',
@@ -97,4 +97,103 @@
             </div>
         </form>
     </dialog>
+    <dialog id="verification-warning-dialog"
+    class="m-auto w-full max-w-md rounded-2xl bg-white p-0 shadow-xl backdrop:bg-black/40">
+
+    <div class="p-6 text-center">
+
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-8 w-8 text-amber-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v4m0 4h.01M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3.1l-8-14a2 2 0 00-3.4 0z"/>
+            </svg>
+        </div>
+
+        <h2 class="text-xl font-semibold text-brand-700">
+            Akun Belum Terverifikasi
+        </h2>
+
+        <p id="verification-warning-message"
+            class="mt-3 text-sm leading-relaxed text-gray-600">
+            Akun Anda belum dapat membuat lowongan pekerjaan karena masih menunggu verifikasi Admin.
+        </p>
+
+        <div class="mt-5 rounded-lg bg-amber-50 p-4 text-left">
+            <p class="text-sm font-semibold text-amber-800">
+                Apa yang harus dilakukan?
+            </p>
+            <p class="mt-1 text-xs leading-relaxed text-amber-700">
+                Silakan tunggu Admin menyelesaikan proses verifikasi akun Anda.
+                Setelah akun disetujui, fitur pembuatan lowongan akan terbuka secara otomatis.
+            </p>
+        </div>
+
+        <button type="button"
+            data-verification-close
+            class="mt-6 w-full rounded-lg bg-brand-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-brand-800">
+            Mengerti
+        </button>
+
+    </div>
+</dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const createButton = document.getElementById('btn-create-vacancy');
+    const createDialog = document.getElementById('create-vacancy-dialog');
+    const warningDialog = document.getElementById('verification-warning-dialog');
+    const warningMessage = document.getElementById('verification-warning-message');
+
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+
+    const status = user.status_akun;
+
+    createButton.addEventListener('click', function () {
+
+        if (status === 'aktif') {
+            createDialog.showModal();
+            return;
+        }
+
+        if (status === 'ditangguhkan') {
+            warningMessage.textContent =
+                'Akun Anda sedang ditangguhkan oleh Admin. Anda tidak dapat membuat lowongan pekerjaan. Silakan hubungi Admin untuk informasi lebih lanjut.';
+        } else if (status === 'ditolak') {
+            warningMessage.textContent =
+                'Pengajuan verifikasi akun Anda ditolak. Silakan perbaiki biodata dan ajukan verifikasi ulang sebelum membuat lowongan pekerjaan.';
+        } else if (status === 'belum_lengkap') {
+            warningMessage.textContent =
+                'Biodata Anda belum lengkap. Silakan lengkapi biodata terlebih dahulu agar akun dapat diverifikasi Admin.';
+        } else {
+            warningMessage.textContent =
+                'Akun Anda masih menunggu verifikasi Admin. Anda belum dapat membuat lowongan pekerjaan.';
+        }
+
+        warningDialog.showModal();
+    });
+
+    document.querySelectorAll('[data-verification-close]').forEach(button => {
+        button.addEventListener('click', function () {
+            warningDialog.close();
+        });
+    });
+
+    warningDialog.addEventListener('click', function (event) {
+        if (event.target === warningDialog) {
+            warningDialog.close();
+        }
+    });
+
+});
+</script>
+
 </x-layouts.employer>
+
+

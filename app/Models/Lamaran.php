@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,12 @@ class Lamaran extends Model
     protected $table = 'lamaran';
 
     protected $primaryKey = 'id_lamaran';
+
+    public const STATUS_LABELS = [
+        'menunggu' => 'Menunggu',
+        'diterima' => 'Diterima',
+        'ditolak' => 'Ditolak',
+    ];
 
     public const CREATED_AT = 'tanggal_lamaran';
 
@@ -48,5 +55,18 @@ class Lamaran extends Model
     {
         return $this->belongsTo(User::class, 'id_pencari', 'id_pengguna');
     }
-}
 
+    public function scopeForProvider(Builder $query, User $provider): Builder
+    {
+        return $query->whereHas('lowongan', fn (Builder $vacancies) => $vacancies->where('id_penyedia', $provider->getKey()));
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_lamaran' => 'datetime',
+            'tanggal_mulai' => 'datetime',
+            'tanggal_selesai' => 'datetime',
+        ];
+    }
+}
