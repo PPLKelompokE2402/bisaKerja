@@ -186,8 +186,6 @@ class JobVacancyManagementTest extends TestCase
 
     public function test_employer_can_delete_their_vacancy(): void
     {
-        $this->markTestIncomplete('Sprint 1 Known Bug (SCRUM-50): Lowongan belum terhapus dari database, dijadwalkan fix di Sprint 2.');
-
         $vacancy = JobVacancy::factory()->create();
 
         $response = $this->actingAs($vacancy->employer)->delete(route('employer.vacancies.destroy', $vacancy));
@@ -195,18 +193,6 @@ class JobVacancyManagementTest extends TestCase
         $response->assertRedirectToRoute('employer.vacancies.index');
         $response->assertSessionHas('status', 'Lowongan berhasil dihapus.');
         $this->assertModelMissing($vacancy);
-    }
-
-    public function test_sprint_1_bug_vacancy_is_not_deleted_on_destroy(): void
-    {
-        $vacancy = JobVacancy::factory()->create();
-
-        $response = $this->actingAs($vacancy->employer)->delete(route('employer.vacancies.destroy', $vacancy));
-
-        $response->assertRedirectToRoute('employer.vacancies.index');
-        $response->assertSessionHas('status', 'Lowongan berhasil dihapus.');
-        // Konfirmasi bug Sprint 1: data lowongan masih ada di database
-        $this->assertModelExists($vacancy);
     }
 
     public function test_employer_cannot_delete_another_employers_vacancy(): void

@@ -80,8 +80,8 @@ class JobVacancyController extends Controller
     {
         Gate::authorize('delete', $vacancy);
 
-        // BUG (Sprint 1): Lowongan tidak terhapus dari database
-        // $vacancy->delete();
+        $vacancy->lamaran()->delete();
+        $vacancy->delete();
 
         return to_route('employer.vacancies.index')
             ->with('status', 'Lowongan berhasil dihapus.');
