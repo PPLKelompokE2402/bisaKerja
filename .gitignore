@@ -29,3 +29,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Python Selenium testing
+selenium-testing/.venv/
+selenium-testing/.pytest_cache/
+__pycache__/
+*.py[cod]
