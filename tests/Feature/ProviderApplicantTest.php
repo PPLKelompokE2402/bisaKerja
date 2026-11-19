@@ -130,16 +130,24 @@ class ProviderApplicantTest extends TestCase
     public function test_details_only_expose_relevant_stored_fields(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         $application = Lamaran::factory()->create();
-        $application->pencari->update(['keahlian' => 'Memasak', 'pengalaman_kerja' => 'Katering', 'alamat' => 'Alamat pribadi']);
+        $application->pencari->update([
+            'tanggal_lahir' => '1990-04-03',
+            'keahlian' => 'Memasak',
+            'pengalaman_kerja' => 'Katering',
+            'alamat' => 'Alamat pribadi',
+        ]);
         Sanctum::actingAs(User::findOrFail($application->lowongan->id_penyedia));
 
         $response = $this->getJson(self::ENDPOINT.'/'.$application->id_lamaran)->assertOk()
             ->assertJsonPath('data.pelamar.nama', $application->pencari->nama)
             ->assertJsonPath('data.pelamar.email', $application->pencari->email)
+            ->assertJsonPath('data.pelamar.tanggal_lahir', '1990-04-03')
+            ->assertJsonPath('data.pelamar.alamat', 'Alamat pribadi')
             ->assertJsonPath('data.pelamar.keahlian', 'Memasak')
             ->assertJsonPath('data.pelamar.has_cv', false)->assertJsonPath('data.pelamar.has_photo', false);
-        foreach (['kata_sandi', 'remember_token', 'alamat', 'id_admin_verifikator', 'cv', 'foto_profil'] as $field) {
+        foreach (['kata_sandi', 'remember_token', 'id_admin_verifikator', 'cv', 'foto_profil'] as $field) {
             $response->assertJsonMissingPath('data.pelamar.'.$field);
         }
         $this->getJson(self::ENDPOINT.'/'.$application->id_lamaran.'/berkas/cv')->assertNotFound();
@@ -159,7 +167,8 @@ class ProviderApplicantTest extends TestCase
     public function test_owner_can_download_existing_cv_and_photo_without_exposing_storage_paths(): void
     {
         Storage::fake('public');
-        Storage::disk('public')->put('cv/resume.pdf', '%PDF-1.4 test');
+        Storage::fake('local');
+        Storage::disk('local')->put('cv/resume.pdf', '%PDF-1.4 test');
         Storage::disk('public')->put('foto-profil/photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII='));
         $application = Lamaran::factory()->create();
         $application->pencari->update(['cv' => 'cv/resume.pdf', 'foto_profil' => 'foto-profil/photo.png']);
@@ -173,11 +182,13 @@ class ProviderApplicantTest extends TestCase
             ->assertHeader('Cache-Control', 'no-store, private')->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->getJson(self::ENDPOINT.'/'.$application->id_lamaran.'/berkas/foto')->assertOk()
             ->assertHeader('Content-Type', 'image/png');
+        Storage::disk('public')->assertMissing('cv/resume.pdf');
     }
 
     public function test_invalid_stored_file_paths_cannot_be_used_to_read_other_files(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
         Storage::disk('public')->put('secret.pdf', 'private');
         $application = Lamaran::factory()->create();
         Sanctum::actingAs(User::findOrFail($application->lowongan->id_penyedia));
@@ -221,12 +232,15 @@ class ProviderApplicantTest extends TestCase
             $this->postJson('/auth/session', ['token' => $login->json('token')])->assertOk();
 
             if ($role === 'admin') {
+                $this->get(route('home'))->assertRedirectToRoute('admin.dashboard');
                 $this->get(route('admin.dashboard'))->assertOk();
                 $this->get(route('employer.vacancies.index'))->assertForbidden();
             } elseif ($role === 'penyedia_pekerjaan') {
+                $this->get(route('home'))->assertOk()->assertViewIs('jobs.home');
                 $this->get(route('employer.vacancies.index'))->assertOk();
                 $this->get(route('admin.dashboard'))->assertForbidden();
             } else {
+                $this->get(route('home'))->assertRedirectToRoute('jobs.index');
                 $this->post(route('jobs.apply.store', $vacancy->id_lowongan))
                     ->assertRedirectToRoute('jobs.apply', $vacancy->id_lowongan);
                 $this->get(route('employer.vacancies.index'))->assertForbidden();
@@ -473,8 +487,35 @@ class ProviderApplicantTest extends TestCase
             $this->get($path)->assertOk();
         }
 
-        $this->get('/home')->assertRedirectToRoute('employer.vacancies.index');
+        $this->get('/home')->assertRedirectToRoute('login');
         $this->get(route('employer.vacancies.index'))->assertRedirectToRoute('login');
+    }
+
+    public function test_web_logout_revokes_the_login_token_and_clears_the_authenticated_session(): void
+    {
+        $provider = User::factory()->employer()->create();
+        $token = $provider->createToken('web-session')->plainTextToken;
+        $tokenId = $provider->tokens()->sole()->getKey();
+
+        $this->post('/auth/session', ['token' => $token])->assertOk();
+        $this->get(route('home'))->assertOk()->assertViewIs('jobs.home');
+        $this->post(route('logout'))->assertRedirectToRoute('login');
+
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $tokenId]);
+        $this->get(route('home'))->assertRedirectToRoute('login');
+    }
+
+    public function test_web_logout_revokes_a_legacy_session_token_owned_by_the_authenticated_user(): void
+    {
+        $provider = User::factory()->employer()->create();
+        $token = $provider->createToken('legacy-web-session')->plainTextToken;
+        $tokenId = $provider->tokens()->sole()->getKey();
+
+        $this->actingAs($provider)
+            ->post(route('logout'), ['auth_token' => $token])
+            ->assertRedirectToRoute('login');
+
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $tokenId]);
     }
 
     public function test_admin_pages_are_restricted_to_admin_sessions(): void

@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Lamaran;
 
 class User extends Authenticatable
 {
@@ -32,6 +31,7 @@ class User extends Authenticatable
         'role',
         'status_akun',
         'alamat',
+        'tanggal_lahir',
         'jenis_kelamin',
         'deskripsi_diri',
         'cv',
@@ -92,12 +92,12 @@ class User extends Authenticatable
 
     public function lamaranSaya(): HasMany
     {
-    return $this->hasMany(
-        Lamaran::class,
-        'id_pencari',
-        'id_pengguna'
-    );
-}
+        return $this->hasMany(
+            Lamaran::class,
+            'id_pencari',
+            'id_pengguna'
+        );
+    }
 
     /**
      * Determine whether the user is an employer (penyedia pekerjaan).
@@ -111,6 +111,7 @@ class User extends Authenticatable
     {
         return [
             'kata_sandi' => 'hashed',
+            'tanggal_lahir' => 'date',
             'tanggal_verifikasi' => 'datetime',
             'dibuat_pada' => 'datetime',
             'diperbarui_pada' => 'datetime',

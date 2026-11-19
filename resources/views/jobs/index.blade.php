@@ -15,19 +15,38 @@
             <span class="text-xl font-bold text-emerald-800">bisaKerja</span>
         </div>
 
+        @php($role = auth()->user()?->role)
         <nav class="space-y-4 text-gray-600 font-medium">
-            <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 text-emerald-700 font-bold bg-emerald-50 p-3 rounded-xl">
-                <span>Lowongan Kerja</span>
-            </a>
-            <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Lamaran Saya</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Chat</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-xl transition">
-                <span>Profil</span>
-            </a>
+            @if ($role === 'pencari_kerja')
+                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl bg-emerald-50 p-3 font-bold text-emerald-700">
+                    <span>Beranda / Lowongan Kerja</span>
+                </a>
+                <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">
+                    <span>Lamaran Saya</span>
+                </a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
+            @elseif ($role === 'penyedia_pekerjaan')
+                <a href="{{ route('home') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
+                <a href="{{ route('employer.vacancies.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Lowongan Saya</a>
+                <a href="{{ route('home', ['view' => 'pelamar-saya']) }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Pelamar Saya</a>
+                <a href="{{ route('provider.biodata') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Profil</a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+            @elseif ($role === 'admin')
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Dashboard Admin</a>
+                <a href="{{ route('admin.verifikasi') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Verifikasi Akun</a>
+                <a href="{{ route('admin.pengguna') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Manajemen Pengguna</a>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Kategori (Belum tersedia)</span>
+                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Laporan (Belum tersedia)</span>
+            @else
+                <a href="{{ route('welcome') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
+                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Cari Lowongan</a>
+                <a href="{{ route('login') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Masuk</a>
+                <a href="{{ route('register.role') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Daftar</a>
+            @endif
+            @if (auth()->check())
+                @include('components.logout-form', ['buttonClass' => 'w-full rounded-xl p-3 text-left hover:bg-gray-100'])
+            @endif
         </nav>
     </aside>
 

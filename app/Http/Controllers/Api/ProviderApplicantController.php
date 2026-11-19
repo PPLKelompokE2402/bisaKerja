@@ -68,9 +68,10 @@ class ProviderApplicantController extends Controller
     public function show(Request $request, int $lamaran): JsonResponse
     {
         $application = Lamaran::query()->forProvider($request->user())
-            ->with(['lowongan:id_lowongan,judul', 'pencari:id_pengguna,nama,email,nomor_telepon,deskripsi_diri,keahlian,pengalaman_kerja,cv,foto_profil'])
+            ->with(['lowongan:id_lowongan,judul', 'pencari:id_pengguna,nama,email,nomor_telepon,tanggal_lahir,alamat,deskripsi_diri,keahlian,pengalaman_kerja,cv,foto_profil'])
             ->findOrFail($lamaran);
         $applicant = $application->pencari;
+        $hasCv = $this->availableFile($applicant->cv, 'cv');
 
         return response()->json(['data' => [
             ...$this->applicationData($application),
@@ -80,10 +81,16 @@ class ProviderApplicantController extends Controller
                 'nama' => $applicant->nama,
                 'email' => $applicant->email,
                 'nomor_telepon' => $applicant->nomor_telepon,
+                'tanggal_lahir' => $applicant->tanggal_lahir?->toDateString(),
+                'umur' => $applicant->tanggal_lahir?->age,
+                'alamat' => $applicant->alamat,
                 'deskripsi_diri' => $applicant->deskripsi_diri,
                 'keahlian' => $applicant->keahlian,
                 'pengalaman_kerja' => $applicant->pengalaman_kerja,
-                'has_cv' => $this->availableFile($applicant->cv, 'cv'),
+                'has_cv' => $hasCv,
+                'cv_extension' => $hasCv
+                    ? strtolower(pathinfo($applicant->cv, PATHINFO_EXTENSION))
+                    : null,
                 'has_photo' => $this->availableFile($applicant->foto_profil, 'foto'),
             ],
         ]]);
@@ -97,8 +104,15 @@ class ProviderApplicantController extends Controller
         abort_unless($this->availableFile($path, $type), 404);
 
         if ($type === 'cv') {
-            return response()->download(Storage::disk('public')->path($path), 'CV-pelamar.pdf', [
-                'Content-Type' => 'application/pdf',
+            $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $contentType = match ($extension) {
+                'doc' => 'application/msword',
+                'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                default => 'application/pdf',
+            };
+
+            return response()->download(Storage::disk('local')->path($path), "CV-pelamar.{$extension}", [
+                'Content-Type' => $contentType,
                 'X-Content-Type-Options' => 'nosniff',
             ]);
         }
@@ -121,8 +135,11 @@ class ProviderApplicantController extends Controller
 
     private function availableFile(?string $path, string $type): bool
     {
-        $pattern = $type === 'cv' ? '~\Acv/[a-zA-Z0-9_-]+\.pdf\z~i' : '~\Afoto-profil/[a-zA-Z0-9_-]+\.(?:jpe?g|png)\z~i';
+        $pattern = $type === 'cv'
+            ? '~\Acv/[a-zA-Z0-9_-]+\.(?:pdf|docx?)\z~i'
+            : '~\Afoto-profil/[a-zA-Z0-9_-]+\.(?:jpe?g|png)\z~i';
+        $disk = $type === 'cv' ? 'local' : 'public';
 
-        return $path !== null && preg_match($pattern, $path) === 1 && Storage::disk('public')->exists($path);
+        return $path !== null && preg_match($pattern, $path) === 1 && Storage::disk($disk)->exists($path);
     }
 }

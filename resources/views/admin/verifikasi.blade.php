@@ -370,7 +370,7 @@
     const token = getToken();
 
     if (!token) {
-        window.location.replace('/login');
+        window.location.replace(@json(route('login')));
         return;
     }
 
@@ -395,7 +395,7 @@
         if (response.status === 401) {
             sessionStorage.removeItem('auth_token');
             sessionStorage.removeItem('user');
-            window.location.replace('/login');
+            window.location.replace(@json(route('login')));
             return;
         }
 
@@ -553,9 +553,7 @@
             ? `/storage/${user.foto_profil}`
             : null;
 
-        const cv = user.cv
-            ? `/storage/${user.cv}`
-            : null;
+        const cv = user.cv || null;
 
         content.innerHTML = `
             <div class="detail-profile">
@@ -607,7 +605,7 @@
                 ${cv
                     ? `<a class="detail-document"
                          href="${cv}" target="_blank" rel="noopener">
-                         Lihat CV Pengguna (PDF)
+                         Lihat CV / Resume Pengguna
                        </a>`
                     : '<p>CV belum tersedia.</p>'}
             </div>

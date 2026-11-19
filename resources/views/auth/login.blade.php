@@ -272,19 +272,18 @@
 
             alert(result.message);
 
-            // 4. Redirect berdasarkan role
-            if (result.user.role === 'admin') {
-                window.location.href = '/admin/dashboard';
-
-            } else if (result.user.role === 'pencari_kerja') {
-                window.location.href = '/lowongan';
-
-            } else if (result.user.role === 'penyedia_pekerjaan') {
-                window.location.href = '/pemberi-kerja/lowongan';
-
-            } else {
+            if (!['admin', 'pencari_kerja', 'penyedia_pekerjaan'].includes(result.user.role)) {
                 alert('Role pengguna tidak dikenali.');
+                return;
             }
+
+            const destinationByRole = {
+                admin: "{{ route('admin.dashboard') }}",
+                pencari_kerja: "{{ route('jobs.index') }}",
+                penyedia_pekerjaan: "{{ route('employer.vacancies.index') }}"
+            };
+
+            window.location.href = destinationByRole[result.user.role];
 
         } catch (error) {
             console.error('Detail error login:', error);

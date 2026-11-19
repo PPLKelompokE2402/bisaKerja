@@ -420,25 +420,37 @@
 
     <!-- NAVBAR -->
     <header class="navbar">
-
-        <a href="{{ route('welcome') }}" class="logo">
+        @php($role = auth()->user()?->role)
+        <a href="{{ $role === 'pencari_kerja' ? route('jobs.index') : ($role === 'penyedia_pekerjaan' ? route('home') : ($role === 'admin' ? route('admin.dashboard') : route('welcome'))) }}" class="logo">
             bisaKerja
         </a>
 
         <nav class="nav-menu">
-            <a href="{{ route('welcome') }}" class="active">Beranda</a>
-            <!-- <a href="{{ route('jobs.index') }}">Cari Lowongan</a> -->
-            <a href="{{ route('login') }}">Pasang Pekerjaan</a>
+            @if ($role === 'pencari_kerja')
+                <a href="{{ route('jobs.index') }}" class="active">Beranda</a>
+                <a href="{{ route('seeker.applications') }}">Lamaran Saya</a>
+            @elseif ($role === 'penyedia_pekerjaan')
+                <a href="{{ route('home') }}">Beranda</a>
+                <a href="{{ route('employer.vacancies.index') }}">Lowongan Saya</a>
+                <a href="{{ route('home', ['view' => 'pelamar-saya']) }}">Pelamar Saya</a>
+                <a href="{{ route('provider.biodata') }}">Profil</a>
+            @elseif ($role === 'admin')
+                <a href="{{ route('admin.dashboard') }}">Dashboard Admin</a>
+                <a href="{{ route('admin.verifikasi') }}">Verifikasi Akun</a>
+                <a href="{{ route('admin.pengguna') }}">Manajemen Pengguna</a>
+            @else
+                <a href="{{ route('welcome') }}" class="active">Beranda</a>
+                <a href="{{ route('login') }}">Pasang Pekerjaan</a>
+            @endif
         </nav>
 
         <div class="nav-actions">
-            <a href="{{ route('login') }}" class="btn btn-outline">
-                Masuk
-            </a>
-
-            <a href="{{ route('register.role') }}" class="btn btn-primary">
-                Daftar Sekarang
-            </a>
+            @if (auth()->check())
+                @include('components.logout-form', ['buttonClass' => 'btn btn-outline'])
+            @else
+                <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
+                <a href="{{ route('register.role') }}" class="btn btn-primary">Daftar Sekarang</a>
+            @endif
         </div>
 
     </header>

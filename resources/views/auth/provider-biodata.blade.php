@@ -203,7 +203,7 @@
     </div>
 
     <div class="top-meta">
-      <a href="#" class="back-link">Kembali ke pilihan peran</a>
+      <a href="{{ route('register.role') }}" class="back-link">Kembali ke pilihan peran</a>
       <div>* Wajib diisi; lainnya opsional</div>
     </div>
 

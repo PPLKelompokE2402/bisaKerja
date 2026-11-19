@@ -503,7 +503,7 @@
         const file = this.files[0];
 
         if (!file) {
-              fotoLabel.textContent = '{{ $user->foto_profil ? 'Foto saat ini tersimpan' : 'Belum ada file dipilih' }}';
+              fotoLabel.textContent = '{{ $user->foto_profil ? "Foto saat ini tersimpan" : "Belum ada file dipilih" }}';
             return;
         }
 
@@ -521,7 +521,7 @@
         const file = this.files[0];
 
         if (!file) {
-            dokumenLabel.textContent = '{{ $user->dokumen_verifikasi ? 'Dokumen verifikasi saat ini tersimpan' : 'Belum ada file dipilih' }}';
+            dokumenLabel.textContent = '{{ $user->dokumen_verifikasi ? "Dokumen verifikasi saat ini tersimpan" : "Belum ada file dipilih" }}';
             return;
         }
 

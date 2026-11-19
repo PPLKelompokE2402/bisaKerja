@@ -7,7 +7,6 @@
     <title>Home - bisaKerja</title>
     <link rel="stylesheet" href="{{ asset('css/provider-navigation.css') }}">
     <script src="{{ asset('js/provider-navigation.js') }}" defer></script>
-    <script src="{{ asset('js/seeker-applications-link.js') }}" defer></script>
 
     <style>
         * {
@@ -87,18 +86,21 @@
     </style>
 </head>
 
-<body>
+<body data-provider-navigation data-login="{{ route('login') }}">
 
 <header class="navbar">
     <div class="logo">bisaKerja</div>
 
-    <a href="{{ route('provider.biodata') }}" class="profile-btn" id="profileButton">
-        Profil
-    </a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        @include('components.logout-form', ['buttonClass' => 'profile-btn'])
+        <a href="{{ route('provider.biodata') }}" class="profile-btn" id="profileButton">
+            Profil
+        </a>
+    </div>
 </header>
 
 <div class="provider-home-layout">
-    <aside id="provider-navigation" hidden aria-label="Navigasi penyedia pekerjaan">
+    <aside id="provider-navigation" aria-label="Navigasi penyedia pekerjaan">
         <nav>
             <a href="{{ route('home') }}" aria-current="page">Beranda</a>
             <a href="{{ route('home', ['view' => 'pelamar-saya']) }}">
@@ -116,7 +118,6 @@
             Memeriksa status akun...
         </div>
         <p id="provider-navigation-notice" role="status" hidden></p>
-        <p id="seeker-applications-link" hidden><a href="{{ route('seeker.applications') }}" style="color: #1d704f; font-weight: 600;">Lamaran Saya</a></p>
     </div>
 </main>
 </div>

@@ -229,22 +229,22 @@
                     <span>Manajemen Pengguna</span>
             </a>
 
-            <a href="#"
-               class="menu-link">
-                <span>Laporan Pengguna</span>
-            </a>
+            <span class="menu-link" aria-disabled="true" title="Fitur belum tersedia">
+                Kategori <small>(Belum tersedia)</small>
+            </span>
 
-            <a href="#"
-               class="menu-link">
-                <span>Pengaturan</span>
-            </a>
+            <span class="menu-link" aria-disabled="true" title="Fitur belum tersedia">
+                Laporan Pengguna <small>(Belum tersedia)</small>
+            </span>
+
+            <span class="menu-link" aria-disabled="true" title="Fitur belum tersedia">
+                Pengaturan <small>(Belum tersedia)</small>
+            </span>
 
         </nav>
 
         <div class="sidebar-bottom">
-            <button class="logout-button" onclick="logoutAdmin()">
-                <span>Keluar dari akun</span>
-            </button>
+            @include('components.logout-form', ['buttonClass' => 'logout-button'])
         </div>
 
     </aside>
@@ -264,30 +264,6 @@
     </main>
 
 </div>
-
-<script>
-    async function logoutAdmin() {
-        const token = sessionStorage.getItem('auth_token');
-
-        try {
-            if (token) {
-                await fetch('/api/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            sessionStorage.removeItem('auth_token');
-            sessionStorage.removeItem('user');
-            window.location.href = '/login';
-        }
-    }
-</script>
 
 @stack('scripts')
 

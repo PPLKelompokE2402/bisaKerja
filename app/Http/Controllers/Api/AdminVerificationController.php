@@ -3,32 +3,34 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminVerificationController extends Controller
 {
-        public function pendingUsers()
+    public function pendingUsers()
     {
         $users = User::where(
             'status_akun',
             'menunggu_verifikasi'
         )
-        ->whereIn('role', [
-            'pencari_kerja',
-            'penyedia_pekerjaan',
-        ])
-        ->select(
-            'id_pengguna',
-            'nama',
-            'email',
-            'role',
-            'status_akun',
-            'dibuat_pada'
-        )
-        ->orderBy('dibuat_pada', 'asc')
-        ->get();
+            ->whereIn('role', [
+                'pencari_kerja',
+                'penyedia_pekerjaan',
+            ])
+            ->select(
+                'id_pengguna',
+                'nama',
+                'email',
+                'role',
+                'status_akun',
+                'dibuat_pada'
+            )
+            ->orderBy('dibuat_pada', 'asc')
+            ->get();
 
         return response()->json([
             'message' => 'Daftar akun yang menunggu verifikasi.',
@@ -36,191 +38,224 @@ class AdminVerificationController extends Controller
         ]);
     }
 
-   public function allUsers(Request $request)
-{
-    // Query dasar untuk seluruh pengguna (tanpa admin)
-    $baseQuery = User::query()
-        ->whereIn('role', [
-            'pencari_kerja',
-            'penyedia_pekerjaan',
+    public function allUsers(Request $request)
+    {
+        // Query dasar untuk seluruh pengguna (tanpa admin)
+        $baseQuery = User::query()
+            ->whereIn('role', [
+                'pencari_kerja',
+                'penyedia_pekerjaan',
+            ]);
+
+        // Menghitung statistik seluruh pengguna
+        $statistics = [
+            'total_pengguna' => (clone $baseQuery)->count(),
+
+            'akun_aktif' => (clone $baseQuery)
+                ->where('status_akun', 'aktif')
+                ->count(),
+
+            'akun_ditangguhkan' => (clone $baseQuery)
+                ->where('status_akun', 'ditangguhkan')
+                ->count(),
+        ];
+
+        // Query untuk daftar pengguna
+        $query = clone $baseQuery;
+
+        // Pencarian nama atau email
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan role
+        if ($request->filled('role')) {
+            $request->validate([
+                'role' => [
+                    Rule::in([
+                        'pencari_kerja',
+                        'penyedia_pekerjaan',
+                    ]),
+                ],
+            ]);
+
+            $query->where('role', $request->input('role'));
+        }
+
+        // Filter berdasarkan status akun
+        if ($request->filled('status')) {
+            $request->validate([
+                'status' => [
+                    Rule::in([
+                        'aktif',
+                        'menunggu_verifikasi',
+                        'ditolak',
+                        'ditangguhkan',
+                    ]),
+                ],
+            ]);
+
+            $query->where('status_akun', $request->input('status'));
+        }
+
+        $users = $query
+            ->select(
+                'id_pengguna',
+                'nama',
+                'email',
+                'role',
+                'status_akun',
+                'dibuat_pada'
+            )
+            ->orderBy('dibuat_pada', 'desc')
+            ->paginate(10);
+
+        return response()->json([
+            'message' => 'Daftar pengguna berhasil diambil.',
+            'statistics' => $statistics,
+            'data' => $users,
         ]);
-
-    // Menghitung statistik seluruh pengguna
-    $statistics = [
-        'total_pengguna' => (clone $baseQuery)->count(),
-
-        'akun_aktif' => (clone $baseQuery)
-            ->where('status_akun', 'aktif')
-            ->count(),
-
-        'akun_ditangguhkan' => (clone $baseQuery)
-            ->where('status_akun', 'ditangguhkan')
-            ->count(),
-    ];
-
-    // Query untuk daftar pengguna
-    $query = clone $baseQuery;
-
-    // Pencarian nama atau email
-    if ($request->filled('search')) {
-        $search = $request->input('search');
-
-        $query->where(function ($q) use ($search) {
-            $q->where('nama', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%");
-        });
     }
 
-    // Filter berdasarkan role
-    if ($request->filled('role')) {
-        $request->validate([
-            'role' => [
-                Rule::in([
-                    'pencari_kerja',
-                    'penyedia_pekerjaan',
-                ]),
+    public function updateUserStatus(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'status_akun' => [
+                'required',
+                Rule::in(['aktif', 'ditangguhkan']),
             ],
         ]);
 
-        $query->where('role', $request->input('role'));
-    }
+        $user = User::where('id_pengguna', $id)
+            ->whereIn('role', [
+                'pencari_kerja',
+                'penyedia_pekerjaan',
+            ])
+            ->first();
 
-    // Filter berdasarkan status akun
-    if ($request->filled('status')) {
-        $request->validate([
-            'status' => [
-                Rule::in([
-                    'aktif',
-                    'menunggu_verifikasi',
-                    'ditolak',
-                    'ditangguhkan',
-                ]),
+        if (! $user) {
+            return response()->json([
+                'message' => 'Pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        // Hanya akun aktif yang dapat ditangguhkan,
+        // dan hanya akun ditangguhkan yang dapat diaktifkan kembali.
+        $allowed = (
+            $user->status_akun === 'aktif'
+            && $validated['status_akun'] === 'ditangguhkan'
+        ) || (
+            $user->status_akun === 'ditangguhkan'
+            && $validated['status_akun'] === 'aktif'
+        );
+
+        if (! $allowed) {
+            return response()->json([
+                'message' => 'Perubahan status akun tidak diperbolehkan.',
+            ], 422);
+        }
+
+        $user->status_akun = $validated['status_akun'];
+        $user->save();
+
+        // Cabut token supaya akun yang ditangguhkan
+        // tidak bisa terus menggunakan sesi sebelumnya.
+        if ($user->status_akun === 'ditangguhkan') {
+            $user->tokens()->delete();
+        }
+
+        return response()->json([
+            'message' => $user->status_akun === 'ditangguhkan'
+                ? 'Akun berhasil ditangguhkan.'
+                : 'Akun berhasil diaktifkan kembali.',
+            'data' => [
+                'id_pengguna' => $user->id_pengguna,
+                'nama' => $user->nama,
+                'status_akun' => $user->status_akun,
             ],
         ]);
-
-        $query->where('status_akun', $request->input('status'));
     }
-    
-
-    $users = $query
-        ->select(
-            'id_pengguna',
-            'nama',
-            'email',
-            'role',
-            'status_akun',
-            'dibuat_pada'
-        )
-        ->orderBy('dibuat_pada', 'desc')
-        ->paginate(10);
-
-    return response()->json([
-        'message' => 'Daftar pengguna berhasil diambil.',
-        'statistics' => $statistics,
-        'data' => $users,
-    ]);
-}
-
-public function updateUserStatus(Request $request, int $id)
-{
-    $validated = $request->validate([
-        'status_akun' => [
-            'required',
-            Rule::in(['aktif', 'ditangguhkan']),
-        ],
-    ]);
-
-    $user = User::where('id_pengguna', $id)
-        ->whereIn('role', [
-            'pencari_kerja',
-            'penyedia_pekerjaan',
-        ])
-        ->first();
-
-    if (! $user) {
-        return response()->json([
-            'message' => 'Pengguna tidak ditemukan.',
-        ], 404);
-    }
-
-    // Hanya akun aktif yang dapat ditangguhkan,
-    // dan hanya akun ditangguhkan yang dapat diaktifkan kembali.
-    $allowed = (
-        $user->status_akun === 'aktif'
-        && $validated['status_akun'] === 'ditangguhkan'
-    ) || (
-        $user->status_akun === 'ditangguhkan'
-        && $validated['status_akun'] === 'aktif'
-    );
-
-    if (! $allowed) {
-        return response()->json([
-            'message' => 'Perubahan status akun tidak diperbolehkan.',
-        ], 422);
-    }
-
-    $user->status_akun = $validated['status_akun'];
-    $user->save();
-
-    // Cabut token supaya akun yang ditangguhkan
-    // tidak bisa terus menggunakan sesi sebelumnya.
-    if ($user->status_akun === 'ditangguhkan') {
-        $user->tokens()->delete();
-    }
-
-    return response()->json([
-        'message' => $user->status_akun === 'ditangguhkan'
-            ? 'Akun berhasil ditangguhkan.'
-            : 'Akun berhasil diaktifkan kembali.',
-        'data' => [
-            'id_pengguna' => $user->id_pengguna,
-            'nama' => $user->nama,
-            'status_akun' => $user->status_akun,
-        ],
-    ]);
-}
 
     public function showUser(int $id)
-{
-    $user = User::where('id_pengguna', $id)
-        ->whereIn('role', [
-            'pencari_kerja',
-            'penyedia_pekerjaan',
-        ])
-        ->select(
-            'id_pengguna',
-            'nama',
-            'email',
-            'nomor_telepon',
-            'role',
-            'status_akun',
-            'alamat',
-            'tanggal_lahir',
-            'jenis_kelamin',
-            'deskripsi_diri',
-            'cv',
-            'foto_profil',
-            'keahlian',
-            'pengalaman_kerja',
-            'jenis_pemberi',
-            'tanggal_verifikasi',
-            'id_admin_verifikator',
-            'catatan_verifikasi',
-            'dibuat_pada'
-        )
-        ->first();
+    {
+        $user = User::where('id_pengguna', $id)
+            ->whereIn('role', [
+                'pencari_kerja',
+                'penyedia_pekerjaan',
+            ])
+            ->select(
+                'id_pengguna',
+                'nama',
+                'email',
+                'nomor_telepon',
+                'role',
+                'status_akun',
+                'alamat',
+                'tanggal_lahir',
+                'jenis_kelamin',
+                'deskripsi_diri',
+                'cv',
+                'foto_profil',
+                'keahlian',
+                'pengalaman_kerja',
+                'jenis_pemberi',
+                'tanggal_verifikasi',
+                'id_admin_verifikator',
+                'catatan_verifikasi',
+                'dibuat_pada'
+            )
+            ->first();
 
-    if (! $user) {
+        if (! $user) {
+            return response()->json([
+                'message' => 'Data pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        $user->setAttribute(
+            'cv',
+            $this->availableCv($user->cv) ? route('admin.users.cv', $user->id_pengguna) : null
+        );
+
         return response()->json([
-            'message' => 'Data pengguna tidak ditemukan.',
-        ], 404);
+            'message' => 'Detail pengguna berhasil diambil.',
+            'data' => $user,
+        ]);
     }
 
-    return response()->json([
-        'message' => 'Detail pengguna berhasil diambil.',
-        'data' => $user,
-    ]);
-}
+    public function downloadCv(int $id): BinaryFileResponse
+    {
+        $user = User::query()
+            ->whereIn('role', ['pencari_kerja', 'penyedia_pekerjaan'])
+            ->findOrFail($id);
+        $path = $user->cv;
+        abort_unless($this->availableCv($path), 404);
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $contentType = match ($extension) {
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            default => 'application/pdf',
+        };
+
+        return response()->download(Storage::disk('local')->path($path), "CV-pelamar.{$extension}", [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    private function availableCv(?string $path): bool
+    {
+        return $path !== null
+            && preg_match('~\Acv/[a-zA-Z0-9_-]+\.(?:pdf|docx?)\z~i', $path) === 1
+            && Storage::disk('local')->exists($path);
+    }
 
     public function verifyUser(Request $request, int $id)
     {

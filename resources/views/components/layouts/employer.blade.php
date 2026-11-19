@@ -15,8 +15,11 @@
     </head>
     <body class="min-h-screen bg-white font-sans text-gray-900 antialiased">
         <header class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 lg:px-12">
-            <a href="{{ route('employer.vacancies.index') }}" class="text-xl font-semibold text-brand-700">bisaKerja</a>
-            <span class="text-sm text-gray-600">{{ auth()->user()?->nama ?? 'Pemberi Kerja' }}</span>
+            <a href="{{ route('home') }}" class="text-xl font-semibold text-brand-700">bisaKerja</a>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-600">{{ auth()->user()?->nama ?? 'Pemberi Kerja' }}</span>
+                @include('components.logout-form', ['buttonClass' => 'rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'])
+            </div>
         </header>
 
         <div class="flex min-h-[calc(100vh-4rem)]">
@@ -48,8 +51,8 @@
                 Pelamar Saya
             </a>
         @endif
-        <span class="cursor-not-allowed rounded-lg px-3 py-3 text-gray-700">
-            Chat
+        <span class="cursor-not-allowed rounded-lg px-3 py-3 text-gray-400" aria-disabled="true">
+            Chat (Belum tersedia)
         </span>
         <a href="{{ route('provider.biodata') }}"
            class="rounded-lg px-3 py-3 text-gray-700 hover:bg-gray-100">

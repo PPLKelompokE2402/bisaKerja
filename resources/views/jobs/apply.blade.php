@@ -42,20 +42,13 @@
                 Beranda
             </a>
 
-            <a href="#"
+            <a href="{{ route('seeker.applications') }}"
                class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
                 Lamaran Saya
             </a>
 
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                Chat
-            </a>
-
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                Profil
-            </a>
+            <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
+            <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
         </nav>
     </aside>
 
@@ -71,6 +64,7 @@
             <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full ml-auto">
                 Pencari Kerja
             </span>
+            @include('components.logout-form', ['buttonClass' => 'ml-4 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'])
         </header>
 
         <div class="p-6 md:p-8 max-w-4xl mx-auto space-y-6">
@@ -297,16 +291,82 @@
                 <!-- Form Pengajuan Lamaran -->
                 <form action="{{ route('jobs.apply.store', $job->id_lowongan) }}"
                       method="POST"
+                      enctype="multipart/form-data"
                       class="space-y-6">
 
                     @csrf
 
                     <div class="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
+                        <div>
+                            <h2 class="text-lg font-bold text-emerald-800">Data Diri Pelamar</h2>
+                            <p class="text-gray-500 text-xs mt-1">Informasi ini akan disimpan pada profil Anda untuk pengajuan berikutnya.</p>
+                        </div>
 
                         <div>
-                            <h2 class="text-lg font-bold text-emerald-800">
-                                Pesan Lamaran
-                            </h2>
+                            <label for="nama_lengkap" class="block text-sm font-semibold text-gray-700 mb-2">Nama lengkap <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_lengkap" id="nama_lengkap" maxlength="100" required
+                                value="{{ old('nama_lengkap', $user->nama) }}"
+                                class="w-full px-4 py-3 rounded-lg border @error('nama_lengkap') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                            @error('nama_lengkap')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label for="tanggal_lahir" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal lahir <span class="text-red-500">*</span></label>
+                                <input type="date" name="tanggal_lahir" id="tanggal_lahir" required max="{{ now()->toDateString() }}"
+                                    value="{{ old('tanggal_lahir', $user->tanggal_lahir?->format('Y-m-d')) }}"
+                                    class="w-full px-4 py-3 rounded-lg border @error('tanggal_lahir') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                                @error('tanggal_lahir')
+                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="umur" class="block text-sm font-semibold text-gray-700 mb-2">Umur <span class="text-red-500">*</span></label>
+                                <input type="number" id="umur" value="{{ $age }}" required readonly placeholder="Dihitung otomatis"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Dihitung otomatis berdasarkan tanggal lahir.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="tempat_tinggal" class="block text-sm font-semibold text-gray-700 mb-2">Tempat tinggal / alamat <span class="text-red-500">*</span></label>
+                            <textarea name="tempat_tinggal" id="tempat_tinggal" rows="3" maxlength="1000" required
+                                class="w-full px-4 py-3 rounded-lg border @error('tempat_tinggal') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">{{ old('tempat_tinggal', $user->alamat) }}</textarea>
+                            @error('tempat_tinggal')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="keahlian" class="block text-sm font-semibold text-gray-700 mb-2">Keahlian yang dimiliki <span class="text-red-500">*</span></label>
+                            <textarea name="keahlian" id="keahlian" rows="3" maxlength="2000" required
+                                class="w-full px-4 py-3 rounded-lg border @error('keahlian') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">{{ old('keahlian', $user->keahlian) }}</textarea>
+                            @error('keahlian')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="cv" class="block text-sm font-semibold text-gray-700 mb-2">CV / Resume (Opsional)</label>
+                            <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                class="w-full text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:font-semibold file:text-emerald-800 hover:file:bg-emerald-100">
+                            <p id="cv-file-name" class="text-xs text-gray-500 mt-2">
+                                {{ $user->cv ? 'CV tersimpan. Pilih berkas baru untuk menggantinya.' : 'Belum ada CV yang dipilih.' }}
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">PDF, DOC, atau DOCX; maksimal 2 MB. Berkas hanya dapat diunduh oleh pihak yang berwenang.</p>
+                            @error('cv')
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
+
+                        <div>
+                            <h2 class="text-lg font-bold text-emerald-800">Pesan Lamaran (Wajib)</h2>
 
                             <p class="text-gray-500 text-xs mt-1">
                                 Sampaikan alasan dan ketertarikan Anda terhadap pekerjaan ini kepada penyedia pekerjaan.
@@ -316,13 +376,15 @@
                         <div>
                             <label for="pesan_lamaran"
                                    class="block text-sm font-semibold text-gray-700 mb-2">
-                                Pesan untuk Penyedia Pekerjaan
+                                Pesan untuk Penyedia Pekerjaan <span class="text-red-500">*</span>
                             </label>
 
                             <textarea
                                 name="pesan_lamaran"
                                 id="pesan_lamaran"
                                 rows="6"
+                                maxlength="3000"
+                                required
                                 placeholder="Halo, saya tertarik untuk melamar pekerjaan ini. Saya memiliki kemampuan dan pengalaman yang sesuai dengan kebutuhan pekerjaan..."
                                 class="w-full px-4 py-3 rounded-lg border @error('pesan_lamaran') border-red-500 ring-1 ring-red-500 @else border-gray-300 @enderror bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                             >{{ old('pesan_lamaran') }}</textarea>
@@ -381,5 +443,43 @@
         </div>
     </main>
 
+<script>
+    const birthDateInput = document.getElementById('tanggal_lahir');
+    const ageInput = document.getElementById('umur');
+    const cvInput = document.getElementById('cv');
+    const cvFileName = document.getElementById('cv-file-name');
+    const savedCvMessage = @json($user->cv ? 'CV tersimpan. Pilih berkas baru untuk menggantinya.' : 'Belum ada CV yang dipilih.');
+
+    if (birthDateInput && ageInput) {
+        const updateAge = () => {
+            if (!birthDateInput.value) {
+                ageInput.value = '';
+                return;
+            }
+
+            const [year, month, day] = birthDateInput.value.split('-').map(Number);
+            const today = new Date();
+            let age = today.getFullYear() - year;
+
+            if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) {
+                age--;
+            }
+
+            ageInput.value = age >= 0 ? age : '';
+        };
+
+        birthDateInput.addEventListener('input', updateAge);
+        birthDateInput.addEventListener('change', updateAge);
+        updateAge();
+    }
+
+    if (cvInput && cvFileName) {
+        cvInput.addEventListener('change', () => {
+            cvFileName.textContent = cvInput.files.length > 0
+                ? cvInput.files[0].name
+                : savedCvMessage;
+        });
+    }
+</script>
 </body>
 </html>

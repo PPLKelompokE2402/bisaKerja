@@ -28,10 +28,26 @@ class SeekerApplicationTest extends TestCase
         $this->assertSame(2, substr_count($response->getContent(), '<table>'));
     }
 
-    public function test_public_entry_contains_only_loading_and_no_application_data(): void
+    public function test_authenticated_job_seeker_can_open_entry_without_exposing_application_data(): void
     {
-        $this->get(route('seeker.applications'))->assertOk()->assertSee('Memuat halaman Lamaran Saya...')
+        $jobSeeker = User::factory()->create(['role' => 'pencari_kerja']);
+
+        $this->actingAs($jobSeeker)
+            ->get(route('seeker.applications'))->assertOk()->assertSee('Memuat halaman Lamaran Saya...')
             ->assertSee('seeker-applications-entry.js')->assertDontSee('<table>', false);
+    }
+
+    public function test_guest_is_redirected_from_the_seeker_application_page_to_login(): void
+    {
+        $this->get(route('seeker.applications'))->assertRedirectToRoute('login');
+    }
+
+    #[DataProvider('restrictedRoles')]
+    public function test_other_roles_cannot_open_the_seeker_application_page(string $role): void
+    {
+        $user = User::factory()->create(['role' => $role]);
+
+        $this->actingAs($user)->get(route('seeker.applications'))->assertForbidden();
     }
 
     public function test_guest_cannot_open_or_submit_a_job_application(): void

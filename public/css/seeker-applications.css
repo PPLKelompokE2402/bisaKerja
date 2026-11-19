@@ -12,6 +12,7 @@
 .seeker-sidebar a { padding: 15px 16px; border-radius: 15px; font-size: 16px; text-decoration: none; }
 .seeker-sidebar a:hover { background: #f3faf5; }
 .seeker-sidebar a[aria-current] { background: #e9f4ee; color: #1d704f; font-weight: 600; }
+.seeker-sidebar .seeker-disabled-menu { padding: 15px 16px; color: #858b87; font-size: 16px; }
 .seeker-content { flex: 1; min-width: 0; padding: 48px; max-width: 1600px; }
 .seeker-section + .seeker-section { margin-top: 40px; }
 .seeker-section h1, .seeker-section h2 { margin: 0 0 10px; color: #1d704f; font-size: 30px; font-weight: 600; }
@@ -44,4 +45,4 @@
 .seeker-entry { padding: 48px 5.55%; }
 .seeker-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 @media (max-width: 1100px) { .seeker-sidebar { width: 190px; padding: 30px 16px; } .seeker-content { padding: 32px 24px; } }
-@media (max-width: 640px) { .seeker-header { min-height: 68px; padding: 18px 20px; } .seeker-header .seeker-logo { font-size: 23px; } .seeker-header span { font-size: 13px; } .seeker-layout { display: block; } .seeker-sidebar { width: 100%; padding: 8px; border-right: 0; border-bottom: 1px solid #ccd1ce; } .seeker-sidebar nav { flex-direction: row; gap: 0; justify-content: space-between; } .seeker-sidebar a { font-size: 13px; padding: 12px 10px; border-radius: 10px; } .seeker-content { padding: 28px 16px; } .seeker-section h1, .seeker-section h2 { font-size: 25px; } .seeker-description { font-size: 14px; margin-bottom: 25px; } .seeker-section + .seeker-section { margin-top: 32px; } }
+@media (max-width: 640px) { .seeker-header { min-height: 68px; padding: 18px 20px; } .seeker-header .seeker-logo { font-size: 23px; } .seeker-header span { font-size: 13px; } .seeker-layout { display: block; } .seeker-sidebar { width: 100%; padding: 8px; border-right: 0; border-bottom: 1px solid #ccd1ce; } .seeker-sidebar nav { flex-direction: row; gap: 0; justify-content: space-between; } .seeker-sidebar a, .seeker-sidebar .seeker-disabled-menu { font-size: 13px; padding: 12px 10px; border-radius: 10px; } .seeker-content { padding: 28px 16px; } .seeker-section h1, .seeker-section h2 { font-size: 25px; } .seeker-description { font-size: 14px; margin-bottom: 25px; } .seeker-section + .seeker-section { margin-top: 32px; } }

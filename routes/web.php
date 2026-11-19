@@ -1,5 +1,6 @@
 
 <?php
+use App\Http\Controllers\Api\AdminVerificationController;
 use App\Http\Controllers\Employer\JobVacancyController;
 use App\Http\Controllers\Employer\JobVacancyStatusController;
 use App\Http\Controllers\JobApplicationController;
@@ -41,13 +42,37 @@ Route::post('/auth/session', function (Request $request) {
     Auth::guard('web')->login($user);
 
     $request->session()->regenerate();
+    $request->session()->put('auth_token_id', $accessToken->getKey());
 
     return response()->json([
         'message' => 'Session berhasil dibuat.',
     ]);
 });
 
-Route::view('/lamaran-saya', 'seeker.applications-entry')->name('seeker.applications');
+Route::post('/logout', function (Request $request) {
+    $user = $request->user();
+    $tokenId = $request->session()->pull('auth_token_id');
+    $accessToken = $tokenId !== null
+        ? PersonalAccessToken::query()->find($tokenId)
+        : (is_string($request->input('auth_token')) && $request->input('auth_token') !== ''
+            ? PersonalAccessToken::findToken($request->input('auth_token'))
+            : null);
+    $tokenOwner = $accessToken?->tokenable;
+
+    if ($user instanceof User && $tokenOwner instanceof User && $tokenOwner->is($user)) {
+        $accessToken->delete();
+    }
+
+    Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('login');
+})->name('logout');
+
+Route::view('/lamaran-saya', 'seeker.applications-entry')
+    ->middleware(['auth', 'role:pencari_kerja'])
+    ->name('seeker.applications');
 
 // Landing page
 
@@ -113,9 +138,20 @@ Route::get('/register', function () {
 })->name('register');
 
 // Home pengguna
-Route::get('/home', function () {
-    return redirect()->route('employer.vacancies.index');
-})->name('home');
+Route::get('/home', function (Request $request) {
+    $user = $request->user();
+
+    if (! $user instanceof User) {
+        return redirect()->route('login');
+    }
+
+    return match ($user->role) {
+        'pencari_kerja' => redirect()->route('jobs.index'),
+        'penyedia_pekerjaan' => view('jobs.home'),
+        'admin' => redirect()->route('admin.dashboard'),
+        default => abort(403),
+    };
+})->middleware('auth')->name('home');
 
 Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
 Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');
@@ -136,6 +172,10 @@ Route::prefix('admin')
         Route::get('/pengguna', function () {
             return view('admin.pengguna');
         })->name('pengguna');
+
+        Route::get('/pengguna/{id}/cv', [AdminVerificationController::class, 'downloadCv'])
+            ->whereNumber('id')
+            ->name('users.cv');
     });
 
 // Pengelolaan lowongan oleh pemberi kerja

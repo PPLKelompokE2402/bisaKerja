@@ -8,7 +8,10 @@
     <script src="{{ asset('js/seeker-applications-entry.js') }}" defer></script>
 </head>
 <body class="seeker-applications" data-page="{{ route('seeker.applications.page') }}" data-login="{{ route('login') }}">
-    <header class="seeker-header"><a class="seeker-logo" href="{{ route('home') }}">bisaKerja</a></header>
+    <header class="seeker-header">
+        <a class="seeker-logo" href="{{ route('home') }}">bisaKerja</a>
+        @include('components.logout-form', ['buttonClass' => 'seeker-button'])
+    </header>
     <main class="seeker-entry">
         <p id="seeker-entry-message" role="status">Memuat halaman Lamaran Saya...</p>
         <button id="seeker-entry-retry" class="seeker-button" type="button" hidden>Coba lagi</button>
