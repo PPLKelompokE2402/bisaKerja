@@ -28,17 +28,22 @@ class User extends Authenticatable
         'email',
         'kata_sandi',
         'nomor_telepon',
-        'role',
-        'status_akun',
         'alamat',
         'tanggal_lahir',
         'jenis_kelamin',
         'deskripsi_diri',
-        'cv',
-        'foto_profil',
         'keahlian',
         'pengalaman_kerja',
+        'cv',
+        'foto_profil',
         'jenis_pemberi',
+        'latitude',
+        'longitude',
+        'role',
+        'status_akun',
+        'tanggal_verifikasi',
+        'id_admin_verifikator',
+        'catatan_verifikasi',
         'nama_usaha',
         'dokumen_verifikasi',
     ];
@@ -48,48 +53,41 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the password name for authentication.
-     */
     public function getAuthPasswordName(): string
     {
         return 'kata_sandi';
     }
 
-    /**
-     * Get the password for authentication.
-     */
     public function getAuthPassword(): string
     {
         return $this->kata_sandi;
     }
 
-    /**
-     * Get the name of the unique identifier for the user.
-     */
     public function getAuthIdentifierName(): string
     {
         return 'id_pengguna';
     }
 
-    /**
-     * Compatibility accessor for name.
-     */
     public function getNameAttribute(): ?string
     {
         return $this->attributes['nama'] ?? null;
     }
 
     /**
-     * Get the job vacancies posted by the employer.
-     *
-     * @return HasMany<JobVacancy, $this>
+     * Relasi ke lowongan pekerjaan yang dibuat penyedia.
      */
     public function jobVacancies(): HasMany
     {
-        return $this->hasMany(JobVacancy::class, 'id_penyedia', 'id_pengguna');
+        return $this->hasMany(
+            JobVacancy::class,
+            'id_penyedia',
+            'id_pengguna'
+        );
     }
 
+    /**
+     * Relasi ke lamaran yang dibuat oleh pencari kerja.
+     */
     public function lamaranSaya(): HasMany
     {
         return $this->hasMany(
@@ -100,7 +98,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Determine whether the user is an employer (penyedia pekerjaan).
+     * Determine whether the user is an employer.
      */
     public function isEmployer(): bool
     {

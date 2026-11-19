@@ -1,12 +1,14 @@
-
 <?php
+
 use App\Http\Controllers\Api\AdminVerificationController;
 use App\Http\Controllers\Employer\JobVacancyController;
 use App\Http\Controllers\Employer\JobVacancyStatusController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
+use App\Http\Middleware\UseDemoEmployer;
 use App\Models\JobVacancy;
 use App\Models\KategoriPekerjaan;
 use App\Models\User;
@@ -15,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 
+// Autentikasi menggunakan Sanctum token dan session
 Route::post('/auth/session', function (Request $request) {
     $validated = $request->validate([
         'token' => ['required', 'string'],
@@ -52,14 +55,20 @@ Route::post('/auth/session', function (Request $request) {
 Route::post('/logout', function (Request $request) {
     $user = $request->user();
     $tokenId = $request->session()->pull('auth_token_id');
+
     $accessToken = $tokenId !== null
         ? PersonalAccessToken::query()->find($tokenId)
         : (is_string($request->input('auth_token')) && $request->input('auth_token') !== ''
             ? PersonalAccessToken::findToken($request->input('auth_token'))
             : null);
+
     $tokenOwner = $accessToken?->tokenable;
 
-    if ($user instanceof User && $tokenOwner instanceof User && $tokenOwner->is($user)) {
+    if (
+        $user instanceof User &&
+        $tokenOwner instanceof User &&
+        $tokenOwner->is($user)
+    ) {
         $accessToken->delete();
     }
 
@@ -70,12 +79,12 @@ Route::post('/logout', function (Request $request) {
     return redirect()->route('login');
 })->name('logout');
 
+// Halaman lamaran saya
 Route::view('/lamaran-saya', 'seeker.applications-entry')
     ->middleware(['auth', 'role:pencari_kerja'])
     ->name('seeker.applications');
 
 // Landing page
-
 Route::get('/', function () {
     $jobs = JobVacancy::with(['employer', 'kategori'])
         ->where('status_lowongan', 'aktif')
@@ -86,6 +95,7 @@ Route::get('/', function () {
         ->latest('dibuat_pada')
         ->take(3)
         ->get();
+
     $categories = KategoriPekerjaan::where('status_kategori', 'aktif')
         ->orderBy('nama_kategori')
         ->get();
@@ -137,6 +147,12 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
+Route::get('/register/provider/biodata', [ProviderController::class, 'create'])
+    ->name('provider.create');
+
+Route::post('/register/provider/biodata', [ProviderController::class, 'store'])
+    ->name('provider.store');
+
 // Home pengguna
 Route::get('/home', function (Request $request) {
     $user = $request->user();
@@ -152,9 +168,6 @@ Route::get('/home', function (Request $request) {
         default => abort(403),
     };
 })->middleware('auth')->name('home');
-
-Route::get('/register/provider/biodata', [ProviderController::class, 'create'])->name('provider.create');
-Route::post('/register/provider/biodata', [ProviderController::class, 'store'])->name('provider.store');
 
 // Halaman Admin
 Route::prefix('admin')
@@ -201,3 +214,11 @@ Route::prefix('pemberi-kerja')
         Route::patch('lowongan/{vacancy}/status', [JobVacancyStatusController::class, 'update'])
             ->name('vacancies.status.update');
     });
+
+// Profile Pencari Kerja
+// TEMPORARY: Testing PBI-03 tanpa login
+Route::get('/profile', [ProfileController::class, 'edit'])
+    ->name('profile.edit');
+
+Route::put('/profile', [ProfileController::class, 'update'])
+    ->name('profile.update');
