@@ -23,6 +23,7 @@ class LamaranFactory extends Factory
             'id_lowongan' => JobVacancy::factory(),
             'id_pencari' => User::factory(),
             'status_lamaran' => 'menunggu',
+            'status_pekerjaan' => 'belum_mulai',
         ];
     }
 }

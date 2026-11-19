@@ -3,8 +3,9 @@
     const token = sessionStorage.getItem('auth_token');
     const notice = document.getElementById('provider-navigation-notice');
     const showNotice = (message) => {
-        notice.textContent = message;
-        notice.hidden = false;
+         if (!notice) return;
+    notice.textContent = message;
+    notice.hidden = false;
     };
 
     if (!token) {

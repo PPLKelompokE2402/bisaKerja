@@ -24,14 +24,7 @@ class UseDemoEmployer
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user() === null) {
-            $demoEmployer = User::query()
-                ->where('role', 'penyedia_pekerjaan')
-                ->oldest('id_pengguna')
-                ->first();
-
-            abort_if($demoEmployer === null, 503, 'Belum ada akun penyedia pekerjaan di tabel pengguna. Pastikan database bisakerjaupdatedb sudah di-import.');
-
-            Auth::setUser($demoEmployer);
+            abort(401, 'Silakan login terlebih dahulu.');
         }
 
         return $next($request);

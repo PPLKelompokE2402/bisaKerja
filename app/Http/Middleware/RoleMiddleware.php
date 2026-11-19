@@ -15,18 +15,29 @@ class RoleMiddleware
     //  */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-         $user = $request->user();
+        $user = $request->user();
+        $expectsJson = $request->expectsJson() || $request->is('api/*');
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Silakan login terlebih dahulu.',
-            ], 401);
+        if (! $user) {
+            if ($expectsJson) {
+                return response()->json([
+                    'message' => 'Silakan login terlebih dahulu.',
+                ], 401);
+            }
+
+            return redirect()->guest(route('login'));
         }
-        if (!in_array($user->role, $roles, true)) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki izin untuk mengakses fitur ini.',
-            ], 403);
+
+        if (! in_array($user->role, $roles, true)) {
+            if ($expectsJson) {
+                return response()->json([
+                    'message' => 'Anda tidak memiliki izin untuk mengakses fitur ini.',
+                ], 403);
+            }
+
+            abort(403);
         }
+
         return $next($request);
     }
 }

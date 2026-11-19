@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,28 +7,61 @@
     <title>Detail Lowongan - bisaKerja</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50 p-8">
+
     <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl border shadow-sm space-y-6">
-        <a href="{{ route('jobs.index') }}" class="text-emerald-700 text-sm font-semibold hover:underline">← Kembali ke Pencarian</a>
-        
+
+        <a href="{{ route('jobs.index') }}"
+           class="text-emerald-700 text-sm font-semibold hover:underline">
+            ← Kembali ke Pencarian
+        </a>
+
+        <!-- Informasi Lowongan -->
         <div class="border-b pb-4">
-            <h1 class="text-2xl font-bold text-gray-800">{{ $job->title }}</h1>
-            <p class="text-gray-600 font-medium mt-1">📍 {{ $job->location }} | {{ $job->company }}</p>
-            <div class="mt-3 text-emerald-700 font-bold text-lg">
-                Rp {{ number_format($job->salary_min) }} - Rp {{ number_format($job->salary_max) }}
+
+            <h1 class="text-2xl font-bold text-gray-800">
+                {{ $job->judul }}
+            </h1>
+
+            <p class="text-gray-600 font-medium mt-2">
+                📍 {{ $job->lokasi }}
+                @if($job->employer)
+                    | {{ $job->employer->nama }}
+                @endif
+            </p>
+
+            @if($job->kategori)
+                <p class="text-sm text-emerald-700 font-semibold mt-2">
+                    {{ $job->kategori->nama_kategori }}
+                </p>
+            @endif
+
+            <div class="mt-4 text-emerald-700 font-bold text-xl">
+                Rp {{ number_format((float) $job->upah, 0, ',', '.') }}
             </div>
+
+            @if($job->waktu_pekerjaan)
+                <p class="text-sm text-gray-500 mt-2">
+                    Tanggal Pelaksanaan:
+                    {{ $job->waktu_pekerjaan->format('d M Y') }}
+                </p>
+            @endif
+
         </div>
 
+        <!-- Deskripsi -->
         <div>
-            <h3 class="font-bold text-gray-800 mb-2">Deskripsi Pekerjaan:</h3>
-            <p class="text-gray-600 leading-relaxed">{{ $job->description }}</p>
+            <h3 class="font-bold text-gray-800 mb-2">
+                Deskripsi Pekerjaan
+            </h3>
+
+            <p class="text-gray-600 leading-relaxed whitespace-pre-line">
+                {{ $job->deskripsi }}
+            </p>
         </div>
 
-        <div>
-            <h3 class="font-bold text-gray-800 mb-2">Persyaratan:</h3>
-            <p class="text-gray-600 whitespace-pre-line">{{ $job->requirements }}</p>
-        </div>
-
+        <!-- Notifikasi -->
         @if(session('success'))
             <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg text-sm">
                 {{ session('success') }}
@@ -40,33 +74,17 @@
             </div>
         @endif
 
-        <!-- Tombol Lamar Sekarang (PBI-06 / PBI-53) -->
-        <div class="pt-4 border-t flex justify-between items-center">
-            @php
-                $alreadyApplied = false;
-                if (auth()->check()) {
-                    $alreadyApplied = \App\Models\JobApplication::where('user_id', auth()->id())
-                        ->where('job_id', $job->id)
-                        ->exists();
-                }
-            @endphp
+        <!-- Tombol Lamaran -->
+        <div class="pt-4 border-t flex justify-end">
 
-            @if($alreadyApplied)
-                <div class="inline-flex items-center gap-2 text-amber-800 bg-amber-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-amber-200">
-                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Sudah Dilamar (Menunggu Peninjauan)
-                </div>
-                <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-amber-700 hover:bg-amber-800 text-white font-semibold px-6 py-2.5 rounded-lg transition text-sm">
-                    Lihat Status Lamaran
-                </a>
-            @else
-                <a href="{{ route('jobs.apply', $job->id) }}" class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition ml-auto">
-                    Lamar Sekarang
-                </a>
-            @endif
+            <a href="{{ route('jobs.apply', $job->id_lowongan) }}"
+               class="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-2.5 rounded-lg transition">
+                Lamar Sekarang
+            </a>
+
         </div>
+
     </div>
+
 </body>
 </html>

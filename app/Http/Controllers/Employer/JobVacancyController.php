@@ -21,7 +21,7 @@ class JobVacancyController extends Controller
         Gate::authorize('viewAny', JobVacancy::class);
 
         return view('employer.vacancies.index', [
-            'vacancies' => $request->user()->jobVacancies()->with(['kategori', 'lamaran'])->latest('dibuat_pada')->get(),
+            'vacancies' => $request->user()->jobVacancies()->with('kategori')->withCount('lamaran')->latest('dibuat_pada')->get(),
             'categories' => KategoriPekerjaan::where('status_kategori', 'aktif')->get(),
         ]);
     }
@@ -31,11 +31,17 @@ class JobVacancyController extends Controller
      */
     public function store(JobVacancyRequest $request): RedirectResponse
     {
+        // Hanya akun yang sudah diverifikasi Admin
+        // yang boleh membuat lowongan.
+        if ($request->user()->status_akun !== 'aktif') {
+            return to_route('employer.vacancies.index')
+                ->with('error', 'Akun Anda belum terverifikasi Admin. Anda belum dapat membuat lowongan pekerjaan.');
+        }
+
         Gate::authorize('create', JobVacancy::class);
 
         $request->user()->jobVacancies()->create([
             ...$request->validated(),
-            'upah' => 0,
             'status_lowongan' => 'aktif',
         ]);
 
@@ -70,20 +76,15 @@ class JobVacancyController extends Controller
     }
 
     /**
-     * Delete the given job vacancy.
-     *
-     * Skenario Sprint 1 (SCRUM-50):
-     * Sengaja ada bug: proses $vacancy->delete() dilewati sehingga lowongan
-     * tidak terhapus dari database. Bug ini dicatat di Jira untuk diselesaikan di Sprint 2.
+     * Close the vacancy while preserving its applications and history.
      */
     public function destroy(JobVacancy $vacancy): RedirectResponse
     {
         Gate::authorize('delete', $vacancy);
 
-        // BUG (Sprint 1): Lowongan tidak terhapus dari database
-        // $vacancy->delete();
+        $vacancy->update(['status_lowongan' => 'ditutup']);
 
         return to_route('employer.vacancies.index')
-            ->with('status', 'Lowongan berhasil dihapus.');
+            ->with('status', 'Lowongan berhasil ditutup. Data dan riwayat lamaran tetap disimpan.');
     }
 }

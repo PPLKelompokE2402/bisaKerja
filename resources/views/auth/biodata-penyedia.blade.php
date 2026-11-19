@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BisaKerja - Biodata Penyedia Pekerjaan</title>
+  <title>BisaKerja - {{ $editing ? 'Edit Profil Penyedia' : 'Biodata Penyedia Pekerjaan' }}</title>
   <style>
 
     * {
@@ -287,11 +287,23 @@
     </div>
 
     <div class="title-section">
-      <h1>Biodata Penyedia Pekerjaan</h1>
-      <p>Lengkapi biodata untuk melanjutkan pendaftaran.</p>
+        <h1>{{ $editing ? 'Edit Profil Penyedia' : 'Biodata Penyedia Pekerjaan' }}</h1>
+        <p>{{ $editing ? 'Perbarui informasi profil Anda.' : 'Lengkapi biodata untuk menyelesaikan pendaftaran.' }}</p>
     </div>
 
-   <form id="providerForm" enctype="multipart/form-data">
+      @if ($errors->any())
+        <div role="alert" style="margin-bottom: 20px; color: #a12622;">
+          <ul>
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+
+   <form id="providerForm" action="{{ route('provider.profile.update') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      @method('PUT')
 
     <div class="form-grid">
 
@@ -306,6 +318,7 @@
                     name="nama"
                     class="form-control"
                     placeholder="Masukkan nama lengkap"
+                    value="{{ old('nama', $user->nama) }}"
                     required
                 >
             </div>
@@ -318,6 +331,7 @@
                     name="nomor_telepon"
                     class="form-control"
                     placeholder="Contoh: 081234567890"
+                    value="{{ old('nomor_telepon', $user->nomor_telepon) }}"
                     required
                 >
             </div>
@@ -330,6 +344,7 @@
                     name="alamat"
                     class="form-control"
                     placeholder="Kelurahan/Kecamatan"
+                    value="{{ old('alamat', $user->alamat) }}"
                     required
                 >
             </div>
@@ -342,8 +357,8 @@
                     class="form-control"
                 >
                     <option value="">Pilih jenis kelamin</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
+                    <option value="Laki-laki" @selected(strtolower((string) old('jenis_kelamin', $user->jenis_kelamin)) === 'laki-laki')>Laki-laki</option>
+                    <option value="Perempuan" @selected(strtolower((string) old('jenis_kelamin', $user->jenis_kelamin)) === 'perempuan')>Perempuan</option>
                 </select>
             </div>
 
@@ -354,7 +369,7 @@
                     name="deskripsi_diri"
                     class="form-control"
                     placeholder="Ceritakan singkat tentang dirimu"
-                ></textarea>
+                >{{ old('deskripsi_diri', $user->deskripsi_diri) }}</textarea>
             </div>
 
         </div>
@@ -378,9 +393,12 @@
                     >
 
                     <span id="foto-label" class="file-label">
-                        Belum ada file dipilih
+                        {{ $user->foto_profil ? 'Foto saat ini tersimpan' : 'Belum ada file dipilih' }}
                     </span>
                 </div>
+                @if ($user->foto_profil)
+                    <img src="{{ asset('storage/'.$user->foto_profil) }}" alt="Foto profil saat ini" style="width: 72px; height: 72px; margin-top: 10px; border-radius: 50%; object-fit: cover;">
+                @endif
 
                 <div class="file-note">
                     JPG atau PNG, maksimal 2 MB.
@@ -396,6 +414,7 @@
                             type="radio"
                             name="jenis_pemberi"
                             value="Individu"
+                            @checked(old('jenis_pemberi', $user->jenis_pemberi) === 'Individu')
                             required
                         >
                         Individu
@@ -406,6 +425,7 @@
                             type="radio"
                             name="jenis_pemberi"
                             value="Rumah tangga"
+                            @checked(old('jenis_pemberi', $user->jenis_pemberi) === 'Rumah tangga')
                         >
                         Rumah Tangga
                     </label>
@@ -415,6 +435,7 @@
                             type="radio"
                             name="jenis_pemberi"
                             value="Usaha/UMKM"
+                            @checked(old('jenis_pemberi', $user->jenis_pemberi) === 'Usaha/UMKM')
                         >
                         Usaha/UMKM
                     </label>
@@ -430,6 +451,7 @@
                     name="nama_usaha"
                     class="form-control"
                     placeholder="Masukkan nama usaha, jika ada"
+                    value="{{ old('nama_usaha', $user->nama_usaha) }}"
                 >
 
                 <div class="file-note">
@@ -447,12 +469,15 @@
                         id="dokumen-upload"
                         name="dokumen_verifikasi"
                         accept=".jpg,.jpeg,.png,.pdf"
-                        required
+                        @required(blank($user->dokumen_verifikasi))
                     >
                     <span id="dokumen-label" class="file-label">
-                        Belum ada file dipilih
+                        {{ $user->dokumen_verifikasi ? 'Dokumen verifikasi saat ini tersimpan' : 'Belum ada file dipilih' }}
                     </span>
                 </div>
+                @if ($user->dokumen_verifikasi)
+                    <a href="{{ asset('storage/'.$user->dokumen_verifikasi) }}" target="_blank" rel="noopener noreferrer" class="file-note">Lihat dokumen verifikasi saat ini</a>
+                @endif
                 <div class="file-note">
                     JPG, PNG, atau PDF, maksimal 5 MB.
                 </div>
@@ -461,7 +486,7 @@
     </div>
     <div class="submit-section">
         <button type="submit" class="btn-submit">
-            Selesaikan Pendaftaran
+            {{ $editing ? 'Simpan Perubahan' : 'Selesaikan Pendaftaran' }}
         </button>
     </div>
 </form>
@@ -469,87 +494,48 @@
   </div>
 
   <script>
+    const fotoInput = document.getElementById('foto-upload');
+    const fotoLabel = document.getElementById('foto-label');
+    const dokumenInput = document.getElementById('dokumen-upload');
+    const dokumenLabel = document.getElementById('dokumen-label');
 
-async function updateAccountStatus() {
-    const statusElement = document.getElementById('accountStatus');
-    const token = sessionStorage.getItem('auth_token');
+    fotoInput.addEventListener('change', function () {
+        const file = this.files[0];
 
-    if (!token) {
-        window.location.href = '/login';
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/user', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                sessionStorage.removeItem('auth_token');
-                sessionStorage.removeItem('user');
-                window.location.href = '/login';
-                return;
-            }
-
-            throw new Error('Gagal mengambil data akun.');
+        if (!file) {
+              fotoLabel.textContent = '{{ $user->foto_profil ? 'Foto saat ini tersimpan' : 'Belum ada file dipilih' }}';
+            return;
         }
 
-        const result = await response.json();
-
-        // Mendukung respons API berbentuk { user: {...} }
-        // maupun respons yang langsung berisi data pengguna.
-        const user = result.user ?? result;
-
-        // Perbarui data pengguna di sessionStorage.
-        sessionStorage.setItem('user', JSON.stringify(user));
-
-        // Tampilkan status akun terbaru.
-        switch (user.status_akun) {
-            case 'belum_lengkap':
-                statusElement.textContent =
-                    'Silakan lengkapi biodata Anda.';
-                break;
-
-            case 'menunggu_verifikasi':
-                statusElement.textContent =
-                    'Akun Anda sedang menunggu verifikasi Admin.';
-                break;
-
-            case 'aktif':
-                statusElement.textContent =
-                    'Akun Anda sudah terverifikasi.';
-                break;
-
-            case 'ditolak':
-                statusElement.textContent =
-                    'Verifikasi ditolak. Silakan periksa kembali biodata Anda.';
-                break;
-
-            case 'ditangguhkan':
-                statusElement.textContent =
-                    'Akun Anda sedang ditangguhkan.';
-                break;
-
-            default:
-                statusElement.textContent =
-                    'Status akun tidak diketahui.';
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 2 MB.');
+            this.value = '';
+            fotoLabel.textContent = 'Belum ada file dipilih';
+            return;
         }
 
-    } catch (error) {
-        console.error(error);
-        statusElement.textContent =
-            'Gagal memeriksa status akun. Silakan muat ulang halaman.';
-    }
-}
+        fotoLabel.textContent = file.name;
+    });
 
-updateAccountStatus();
+    dokumenInput.addEventListener('change', function () {
+        const file = this.files[0];
 
-  </script>
+        if (!file) {
+            dokumenLabel.textContent = '{{ $user->dokumen_verifikasi ? 'Dokumen verifikasi saat ini tersimpan' : 'Belum ada file dipilih' }}';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran dokumen maksimal 5 MB.');
+            this.value = '';
+            dokumenLabel.textContent = 'Belum ada file dipilih';
+            return;
+        }
+
+        dokumenLabel.textContent = file.name;
+    });
+</script>
+
 
 </body>
 </html>

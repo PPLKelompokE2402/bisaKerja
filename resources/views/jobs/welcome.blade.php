@@ -129,7 +129,7 @@
 
         .search-form {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
             gap: 12px;
             align-items: end;
             text-align: left;
@@ -149,6 +149,17 @@
             border: 1px solid #dce9df;
             border-radius: 12px;
             outline: none;
+            font-size: 13px;
+        }
+
+        .search-group select {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #dce9df;
+            border-radius: 12px;
+            outline: none;
+            background: white;
             font-size: 13px;
         }
 
@@ -416,7 +427,7 @@
 
         <nav class="nav-menu">
             <a href="{{ route('welcome') }}" class="active">Beranda</a>
-            <a href="{{ route('jobs.index') }}">Cari Lowongan</a>
+            <!-- <a href="{{ route('jobs.index') }}">Cari Lowongan</a> -->
             <a href="{{ route('login') }}">Pasang Pekerjaan</a>
         </nav>
 
@@ -450,7 +461,7 @@
                     <label>Nama pekerjaan</label>
                     <input
                         type="text"
-                        name="search"
+                        name="keyword"
                         placeholder="Cari nama pekerjaan..."
                     >
                 </div>
@@ -462,6 +473,16 @@
                         name="location"
                         placeholder="Masukkan kota atau kecamatan"
                     >
+                </div>
+
+                <div class="search-group">
+                    <label>Kategori pekerjaan</label>
+                    <select name="id_kategori">
+                        <option value="">Semua kategori</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id_kategori }}">{{ $category->nama_kategori }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <button type="submit" class="search-button">

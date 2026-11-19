@@ -154,59 +154,24 @@
 
 
     <div class="role-container">
-
       <div class="role-card">
         <div>
           <h3>Pencari Kerja</h3>
           <p>Saya ingin mencari dan melamar pekerjaan harian di sekitar saya.</p>
         </div>
-        <a href="#" class="btn-role">Daftar sebagai Pencari Kerja</a>
+        <a href="{{ route('register', ['role' => 'pencari_kerja']) }}" class="btn-role">
+          Daftar sebagai Pencari Kerja
+        </a>
       </div>
-
-        <h1>Daftar sebagai apa?</h1>
-
-        <p class="subtitle">
-            Pilih peran yang sesuai untuk melanjutkan pendaftaran.
-        </p>
-
-  <div class="role-container">
-
-    <div class="role-card">
-        <h3>Pencari Kerja</h3>
-
-        <p>
-            Saya ingin mencari dan melamar pekerjaan
-            harian di sekitar saya.
-        </p>
-
-        <a href="{{ route('register', ['role' => 'pencari_kerja']) }}"
-           class="btn btn-primary">
-            Daftar sebagai Pencari Kerja
-        </a>
-    </div>
-
-    <div class="role-card">
-        <h3>Pemberi Kerja</h3>
-
-        <p>
-            Saya ingin memasang lowongan dan mencari
-            orang untuk membantu pekerjaan.
-        </p>
-
-        <a href="{{ route('register', ['role' => 'penyedia_pekerjaan']) }}"
-           class="btn btn-outline">
-            Daftar sebagai Pemberi Kerja
-        </a>
-    </div>
-
-</div>
 
       <div class="role-card">
         <div>
-          <h3>Penyedia Kerja</h3>
+          <h3>Penyedia Pekerjaan</h3>
           <p>Saya ingin memasang lowongan dan mencari orang untuk membantu pekerjaan.</p>
         </div>
-        <a href="{{ route('provider.create') }}" class="btn-role">Daftar sebagai Penyedia Kerja</a>
+        <a href="{{ route('register', ['role' => 'penyedia_pekerjaan']) }}" class="btn-role">
+          Daftar sebagai Penyedia Pekerjaan
+        </a>
       </div>
     </div>
 
