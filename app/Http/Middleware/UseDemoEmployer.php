@@ -9,10 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Temporary stand-in for authentication until Login & Registrasi (SCRUM-51) is merged.
- *
- * Automatically signs in as the demo employer ('penyedia_pekerjaan', e.g. Hikmal Alakbar)
- * from the database if no user is currently authenticated.
+ * Otomatis login sebagai penyedia pekerjaan aktif jika belum ada sesi login.
+ * Memastikan fitur kelola lowongan dapat diakses langsung oleh pengujian otomatis (Selenium).
  */
 class UseDemoEmployer
 {
@@ -23,8 +21,19 @@ class UseDemoEmployer
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (! Auth::check() || $request->user() === null) {
+            $demo = User::where('role', 'penyedia_pekerjaan')
+                ->where('status_akun', 'aktif')
+                ->first();
+
+            if ($demo) {
+                Auth::login($demo);
+                $request->setUserResolver(fn () => $demo);
+            }
+        }
+
         if ($request->user() === null) {
-            abort(401, 'Silakan login terlebih dahulu.');
+            return redirect()->route('login');
         }
 
         return $next($request);

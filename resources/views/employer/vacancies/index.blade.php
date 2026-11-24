@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
 
-    const status = user.status_akun;
+    const status = user.status_akun || @json(auth()->user()?->status_akun);
 
     createButton.addEventListener('click', function () {
 

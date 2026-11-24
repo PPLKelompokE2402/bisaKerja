@@ -60,7 +60,7 @@
                 type="number"
                 id="upah"
                 name="upah"
-                value="{{ old('upah', $vacancy?->upah) }}"
+                value="{{ old('upah', $vacancy?->upah ? (int) $vacancy->upah : null) }}"
                 placeholder="Contoh: 100000"
                 min="1"
                 step="1"

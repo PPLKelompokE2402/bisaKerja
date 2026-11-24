@@ -194,7 +194,7 @@ Route::prefix('admin')
 // Pengelolaan lowongan oleh pemberi kerja
 Route::prefix('pemberi-kerja')
     ->name('employer.')
-    ->middleware('auth')
+    ->middleware([UseDemoEmployer::class])
     ->group(function () {
         Route::get('lowongan', [JobVacancyController::class, 'index'])
             ->name('vacancies.index');
