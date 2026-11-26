@@ -48,7 +48,10 @@
             </a>
 
             <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
-            <span class="block cursor-not-allowed px-4 py-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
+            <a href="{{ route('profile.edit') }}"
+               class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                Profil
+            </a>
         </nav>
     </aside>
 
@@ -448,7 +451,7 @@
     const ageInput = document.getElementById('umur');
     const cvInput = document.getElementById('cv');
     const cvFileName = document.getElementById('cv-file-name');
-    const savedCvMessage = @json($user->cv ? 'CV tersimpan. Pilih berkas baru untuk menggantinya.' : 'Belum ada CV yang dipilih.');
+    const savedCvMessage = cvFileName ? cvFileName.textContent.trim() : '';
 
     if (birthDateInput && ageInput) {
         const updateAge = () => {

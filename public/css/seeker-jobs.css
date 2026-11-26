@@ -1,0 +1,369 @@
+.seeker-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.seeker-header-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.seeker-button-primary {
+    background: #1d704f;
+    border-color: #1d704f;
+    color: #fff;
+    text-decoration: none;
+}
+
+.seeker-button-primary:hover {
+    background: #16593e;
+    border-color: #16593e;
+}
+
+.seeker-button-link {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.seeker-hero {
+    background: #1d704f;
+    color: #fff;
+    border-radius: 18px;
+    padding: 36px 40px;
+    border: 1px solid #175c40;
+}
+
+.seeker-hero-inner {
+    max-width: 920px;
+}
+
+.seeker-hero h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #fff;
+}
+
+.seeker-hero p {
+    margin: 0 0 24px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #e2f0e8;
+}
+
+.seeker-search-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 10px;
+    background: #fff;
+    padding: 8px;
+    border-radius: 14px;
+    border: 1px solid #ccd1ce;
+}
+
+.seeker-search-field {
+    position: relative;
+    min-width: 0;
+}
+
+.seeker-search-input,
+.seeker-search-select {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #e1e8e3;
+    border-radius: 10px;
+    background: #fff;
+    color: #303330;
+    font: 14px Arial, sans-serif;
+}
+
+.seeker-search-input::placeholder {
+    color: #858b87;
+}
+
+.seeker-search-input:focus,
+.seeker-search-select:focus {
+    outline: 2px solid #5ca782;
+    outline-offset: 0;
+    border-color: #1d704f;
+}
+
+.seeker-search-submit {
+    height: 44px;
+    padding: 0 26px;
+    border: 0;
+    border-radius: 10px;
+    background: #1d704f;
+    color: #fff;
+    font: 600 14px Arial, sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.seeker-search-submit:hover {
+    background: #16593e;
+}
+
+.seeker-location-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #fff;
+    border: 1px solid #ccd1ce;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(18, 52, 37, 0.12);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 50;
+}
+
+.seeker-location-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #303330;
+}
+
+.seeker-location-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.seeker-location-item:hover {
+    background: #e9f4ee;
+    color: #1d704f;
+    font-weight: 600;
+}
+
+.seeker-reset-wrap {
+    margin-top: 12px;
+}
+
+.seeker-reset-link {
+    font-size: 13px;
+    color: #e2f0e8;
+    text-decoration: underline;
+}
+
+.seeker-reset-link:hover {
+    color: #fff;
+}
+
+.seeker-jobs-section {
+    margin-top: 40px;
+}
+
+.seeker-jobs-section h2 {
+    margin: 0 0 8px;
+    color: #1d704f;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.seeker-jobs-subtitle {
+    margin: 0 0 24px;
+    color: #6a706c;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.seeker-empty-card {
+    background: #fff;
+    border: 1px solid #ccd1ce;
+    border-radius: 18px;
+    padding: 44px 24px;
+    text-align: center;
+    color: #6a706c;
+}
+
+.seeker-empty-card p {
+    margin: 0;
+}
+
+.seeker-empty-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #303330;
+    margin-bottom: 6px !important;
+}
+
+.seeker-jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.seeker-job-card {
+    background: #fff;
+    border: 1px solid #ccd1ce;
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.seeker-job-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.seeker-job-card h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #303330;
+    overflow-wrap: anywhere;
+}
+
+.seeker-job-meta {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #6a706c;
+    overflow-wrap: anywhere;
+}
+
+.seeker-job-category {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #e9f4ee;
+    color: #1d704f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.seeker-job-desc {
+    margin: 2px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #6a706c;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.seeker-job-card-footer {
+    border-top: 1px solid #e5eee7;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.seeker-job-wage {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1d704f;
+}
+
+.seeker-job-action {
+    display: block;
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 10px;
+    background: #1d704f;
+    color: #fff !important;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.seeker-job-action:hover {
+    background: #16593e;
+}
+
+.seeker-jobs-pagination {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.seeker-jobs-pagination-info {
+    margin: 0;
+    font-size: 14px;
+    color: #6a706c;
+}
+
+.seeker-jobs-pagination-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.seeker-jobs-pagination .seeker-button {
+    text-decoration: none;
+}
+
+.seeker-jobs-pagination .is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+    .seeker-jobs-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .seeker-search-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .seeker-search-submit {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .seeker-hero {
+        padding: 24px 20px;
+    }
+
+    .seeker-hero h1 {
+        font-size: 24px;
+    }
+
+    .seeker-hero p {
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .seeker-search-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .seeker-jobs-section {
+        margin-top: 30px;
+    }
+
+    .seeker-jobs-section h2 {
+        font-size: 22px;
+    }
+
+    .seeker-jobs-subtitle {
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .seeker-jobs-grid {
+        grid-template-columns: 1fr;
+    }
+}

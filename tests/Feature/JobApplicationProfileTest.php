@@ -77,6 +77,26 @@ class JobApplicationProfileTest extends TestCase
         }
     }
 
+    public function test_job_seeker_sidebar_links_to_the_profile_from_job_listings_and_application_form(): void
+    {
+        $provider = User::factory()->employer()->create();
+        $vacancy = $this->createVacancy($provider);
+        $seeker = User::factory()->create();
+
+        $this->actingAs($seeker)
+            ->get(route('jobs.index'))
+            ->assertOk()
+            ->assertSee('href="'.route('profile.edit').'"', false)
+            ->assertSeeText('Profil')
+            ->assertDontSeeText('Profil (Belum tersedia)');
+
+        $this->get(route('jobs.apply', $vacancy->getKey()))
+            ->assertOk()
+            ->assertSee('href="'.route('profile.edit').'"', false)
+            ->assertSeeText('Profil')
+            ->assertDontSeeText('Profil (Belum tersedia)');
+    }
+
     public function test_required_profile_fields_are_validated_and_saved_for_later_applications(): void
     {
         $provider = User::factory()->employer()->create();

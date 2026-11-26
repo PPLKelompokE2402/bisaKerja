@@ -8,7 +8,6 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Middleware\EnsureJobSeekerAuthenticated;
-use App\Http\Middleware\UseDemoEmployer;
 use App\Models\JobVacancy;
 use App\Models\KategoriPekerjaan;
 use App\Models\User;
@@ -80,8 +79,8 @@ Route::post('/logout', function (Request $request) {
 })->name('logout');
 
 // Halaman lamaran saya
-Route::view('/lamaran-saya', 'seeker.applications-entry')
-    ->middleware(['auth', 'role:pencari_kerja'])
+Route::view('/lamaran-saya', 'seeker.applications')
+    ->middleware(['auth', 'role:pencari_kerja', 'cache.headers:private;no_store'])
     ->name('seeker.applications');
 
 // Landing page
@@ -215,10 +214,11 @@ Route::prefix('pemberi-kerja')
             ->name('vacancies.status.update');
     });
 
-// Profile Pencari Kerja
-// TEMPORARY: Testing PBI-03 tanpa login
-Route::get('/profile', [ProfileController::class, 'edit'])
-    ->name('profile.edit');
+// Profil pencari kerja
+Route::middleware(['web', EnsureJobSeekerAuthenticated::class])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-Route::put('/profile', [ProfileController::class, 'update'])
-    ->name('profile.update');
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+});

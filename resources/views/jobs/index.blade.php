@@ -3,99 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pencari Kerja - bisaKerja</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Beranda - bisaKerja</title>
+    <link rel="stylesheet" href="{{ asset('css/seeker-applications.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/seeker-jobs.css') }}">
 </head>
-<body class="bg-gray-50 min-h-screen flex">
+<body class="seeker-applications">
 
-    <!-- Sidebar Navigasi (Fixed/Sticky di Kiri, Diam di Tempat) -->
-    <aside class="w-64 bg-white border-r h-screen p-6 hidden md:block sticky top-0 self-start">
-        <div class="flex items-center space-x-3 mb-8">
-            <div class="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">b</div>
-            <span class="text-xl font-bold text-emerald-800">bisaKerja</span>
-        </div>
+    @php($role = auth()->user()?->role)
+    @php($roleLabel = match ($role) {
+        'pencari_kerja' => 'Pencari Kerja',
+        'penyedia_pekerjaan' => 'Penyedia Pekerjaan',
+        'admin' => 'Admin',
+        default => 'Lowongan Kerja',
+    })
 
-        @php($role = auth()->user()?->role)
-        <nav class="space-y-4 text-gray-600 font-medium">
-            @if ($role === 'pencari_kerja')
-                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl bg-emerald-50 p-3 font-bold text-emerald-700">
-                    <span>Beranda / Lowongan Kerja</span>
-                </a>
-                <a href="{{ route('seeker.applications') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">
-                    <span>Lamaran Saya</span>
-                </a>
-                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
-                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Profil (Belum tersedia)</span>
-            @elseif ($role === 'penyedia_pekerjaan')
-                <a href="{{ route('home') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
-                <a href="{{ route('employer.vacancies.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Lowongan Saya</a>
-                <a href="{{ route('home', ['view' => 'pelamar-saya']) }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Pelamar Saya</a>
-                <a href="{{ route('provider.biodata') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Profil</a>
-                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Chat (Belum tersedia)</span>
-            @elseif ($role === 'admin')
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Dashboard Admin</a>
-                <a href="{{ route('admin.verifikasi') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Verifikasi Akun</a>
-                <a href="{{ route('admin.pengguna') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Manajemen Pengguna</a>
-                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Kategori (Belum tersedia)</span>
-                <span class="block cursor-not-allowed p-3 text-gray-400" aria-disabled="true">Laporan (Belum tersedia)</span>
-            @else
-                <a href="{{ route('welcome') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Beranda</a>
-                <a href="{{ route('jobs.index') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Cari Lowongan</a>
-                <a href="{{ route('login') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Masuk</a>
-                <a href="{{ route('register.role') }}" class="flex items-center space-x-3 rounded-xl p-3 transition hover:bg-gray-100">Daftar</a>
-            @endif
+    <header class="seeker-header">
+        <a href="{{ $role ? route('jobs.index') : route('welcome') }}" class="seeker-logo">bisaKerja</a>
+        <span>{{ $roleLabel }}</span>
+        <div class="seeker-header-actions">
             @if (auth()->check())
-                @include('components.logout-form', ['buttonClass' => 'w-full rounded-xl p-3 text-left hover:bg-gray-100'])
+                @include('components.logout-form', ['buttonClass' => 'seeker-button'])
+            @else
+                <div class="seeker-header-links">
+                    <a href="{{ route('login') }}" class="seeker-button seeker-button-link">Masuk</a>
+                    <a href="{{ route('register.role') }}" class="seeker-button seeker-button-primary seeker-button-link">Daftar</a>
+                </div>
             @endif
-        </nav>
-    </aside>
+        </div>
+    </header>
 
-    <!-- Konten Utama -->
-    <main class="flex-1">
-        <div class="p-8 max-w-6xl mx-auto space-y-8">
-            
-            <!-- Banner & Form Pencarian (overflow-visible biar dropdown rekomendasi gak kepotong) -->
-            <div class="relative rounded-2xl overflow-visible bg-emerald-800 text-white p-8 md:p-12 shadow-md">
-                <div class="max-w-2xl space-y-4 relative z-10">
-                    <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">Cari pekerjaan di sekitar rumah</h1>
-                    <p class="text-emerald-100 text-sm md:text-base">Temukan pekerjaan harian atau freelance sesuai lokasi tempat tinggalmu</p>
-                    
-                    <form action="{{ route('jobs.index') }}" method="GET" class="pt-4">
-                        <div class="bg-white p-2 rounded-2xl shadow-lg flex flex-col md:flex-row gap-2 relative">
-                            <!-- Input Pekerjaan / Keahlian -->
-                            <div class="flex-1">
-                                <input 
-                                    type="text" 
-                                    name="keyword" 
-                                    placeholder="Pekerjaan / Keahlian..." 
+    <div class="seeker-layout">
+        <aside class="seeker-sidebar">
+            <nav aria-label="Navigasi pencari kerja">
+                @if ($role === 'pencari_kerja')
+                    <a href="{{ route('jobs.index') }}" aria-current="page">Beranda</a>
+                    <a href="{{ route('seeker.applications') }}">Lamaran Saya</a>
+                    <span class="seeker-disabled-menu" aria-disabled="true">Chat (Belum tersedia)</span>
+                    <a href="{{ route('profile.edit') }}">Profil</a>
+                @elseif ($role === 'penyedia_pekerjaan')
+                    <a href="{{ route('home') }}">Beranda</a>
+                    <a href="{{ route('employer.vacancies.index') }}">Lowongan Saya</a>
+                    <a href="{{ route('home', ['view' => 'pelamar-saya']) }}">Pelamar Saya</a>
+                    <a href="{{ route('provider.biodata') }}">Profil</a>
+                    <span class="seeker-disabled-menu" aria-disabled="true">Chat (Belum tersedia)</span>
+                @elseif ($role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}">Dashboard Admin</a>
+                    <a href="{{ route('admin.verifikasi') }}">Verifikasi Akun</a>
+                    <a href="{{ route('admin.pengguna') }}">Manajemen Pengguna</a>
+                    <span class="seeker-disabled-menu" aria-disabled="true">Kategori (Belum tersedia)</span>
+                    <span class="seeker-disabled-menu" aria-disabled="true">Laporan (Belum tersedia)</span>
+                @else
+                    <a href="{{ route('welcome') }}">Beranda</a>
+                    <a href="{{ route('jobs.index') }}" aria-current="page">Cari Lowongan</a>
+                    <a href="{{ route('login') }}">Masuk</a>
+                    <a href="{{ route('register.role') }}">Daftar</a>
+                @endif
+            </nav>
+        </aside>
+
+        <main class="seeker-content">
+            <section class="seeker-hero" aria-label="Pencarian lowongan pekerjaan">
+                <div class="seeker-hero-inner">
+                    <h1>Cari pekerjaan di sekitar rumah</h1>
+                    <p>Temukan pekerjaan harian atau freelance sesuai lokasi tempat tinggalmu.</p>
+
+                    <form action="{{ route('jobs.index') }}" method="GET">
+                        <div class="seeker-search-bar">
+                            <div class="seeker-search-field">
+                                <input
+                                    type="text"
+                                    name="keyword"
+                                    placeholder="Pekerjaan / Keahlian..."
                                     value="{{ request('keyword') }}"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700"
+                                    class="seeker-search-input"
                                 >
                             </div>
 
-                            <!-- Input Lokasi dengan Custom Live Search Dropdown -->
-                            <div class="flex-1 relative">
-                                <input 
-                                    type="text" 
+                            <div class="seeker-search-field">
+                                <input
+                                    type="text"
                                     id="location-input"
-                                    name="location" 
-                                    placeholder="Masukkan kota atau lokasi..." 
+                                    name="location"
+                                    placeholder="Masukkan kota atau lokasi..."
                                     value="{{ request('location') }}"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700"
+                                    class="seeker-search-input"
                                     autocomplete="off"
                                 >
-
-                                <!-- Box Dropdown Rekomendasi Melayang (z-50) -->
-                                <div id="location-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-60 overflow-y-auto z-50">
-                                    <ul id="location-list" class="py-2 text-sm text-gray-700">
-                                        <!-- Rekomendasi diisi lewat JS -->
-                                    </ul>
+                                <div id="location-dropdown" class="seeker-location-dropdown" hidden>
+                                    <ul id="location-list" class="seeker-location-list"></ul>
                                 </div>
                             </div>
 
-                            <div class="flex-1">
-                                <select name="id_kategori"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-700">
+                            <div class="seeker-search-field">
+                                <select name="id_kategori" class="seeker-search-select">
                                     <option value="">Semua kategori</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id_kategori }}"
@@ -106,131 +106,145 @@
                                 </select>
                             </div>
 
-                            <!-- Tombol Cari -->
-                            <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-xl transition duration-200">
-                                Cari
-                            </button>
+                            <button type="submit" class="seeker-search-submit">Cari</button>
                         </div>
                     </form>
 
-                    @if(request('keyword') || request('location') || request('id_kategori'))
-                        <div class="pt-2">
-                            <a href="{{ route('jobs.index') }}" class="text-xs text-emerald-200 hover:text-white underline">
+                    @if (request('keyword') || request('location') || request('id_kategori'))
+                        <div class="seeker-reset-wrap">
+                            <a href="{{ route('jobs.index') }}" class="seeker-reset-link">
                                 ↻ Reset Filter Pencarian
                             </a>
                         </div>
                     @endif
                 </div>
-            </div>
+            </section>
 
-            <!-- Job Cards Grid (3 Kolom Sesuai Mockup) -->
-            <div>
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Lowongan di sekitarmu</h2>
+            <section class="seeker-jobs-section" aria-labelledby="seeker-jobs-heading">
+                <h2 id="seeker-jobs-heading">Lowongan di sekitarmu</h2>
+                <p class="seeker-jobs-subtitle">Pilih pekerjaan yang sesuai dengan keahlian dan lokasimu.</p>
 
-                @if($jobs->isEmpty())
-                    <div class="bg-white p-12 text-center rounded-2xl border text-gray-500">
-                        <p class="text-lg font-semibold">Lowongan tidak ditemukan</p>
-                        <p class="text-sm mt-1">Coba gunakan kata kunci atau lokasi lain.</p>
+                @if ($jobs->isEmpty())
+                    <div class="seeker-empty-card">
+                        <p class="seeker-empty-title">Lowongan tidak ditemukan</p>
+                        <p>Coba gunakan kata kunci, lokasi, atau kategori lain.</p>
                     </div>
                 @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        
-@foreach($jobs as $job)
-    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+                    <div class="seeker-jobs-grid">
+                        @foreach ($jobs as $job)
+                            <article class="seeker-job-card">
+                                <div class="seeker-job-card-body">
+                                    <h3>{{ $job->judul }}</h3>
 
-        <div class="space-y-2">
-            <h3 class="font-bold text-gray-800 text-lg leading-snug">
-                {{ $job->judul }}
-            </h3>
+                                    <p class="seeker-job-meta">
+                                        📍 {{ $job->lokasi }}
+                                        @if ($job->employer)
+                                            | {{ $job->employer->nama }}
+                                        @endif
+                                    </p>
 
-            <p class="text-xs text-gray-500 font-medium">
-                📍 {{ $job->lokasi }}
-                @if($job->employer)
-                    | {{ $job->employer->nama }}
-                @endif
-            </p>
+                                    @if ($job->kategori)
+                                        <span class="seeker-job-category">{{ $job->kategori->nama_kategori }}</span>
+                                    @endif
 
-            @if($job->kategori)
-                <p class="text-xs text-emerald-700 font-semibold">
-                    {{ $job->kategori->nama_kategori }}
-                </p>
-            @endif
+                                    <p class="seeker-job-desc">{{ $job->deskripsi }}</p>
+                                </div>
 
-            <p class="text-sm text-gray-600 line-clamp-2 pt-2">
-                {{ $job->deskripsi }}
-            </p>
-        </div>
+                                <div class="seeker-job-card-footer">
+                                    <div class="seeker-job-wage">
+                                        Rp{{ number_format((float) $job->upah, 0, ',', '.') }}
+                                    </div>
 
-        <div class="pt-4 border-t border-gray-100 space-y-3">
-            <div class="text-emerald-700 font-bold text-base">
-                Rp {{ number_format((float) $job->upah, 0, ',', '.') }}
-            </div>
-
-            <a href="{{ route('jobs.show', $job->id_lowongan) }}"
-                class="block w-full bg-emerald-700 hover:bg-emerald-800 text-white text-center text-sm font-semibold py-2.5 rounded-xl transition">
-                Lihat Detail
-            </a>
-        </div>
-    </div>
-@endforeach
-
+                                    <a href="{{ route('jobs.show', $job->id_lowongan) }}" class="seeker-job-action">
+                                        Lihat Detail
+                                    </a>
+                                </div>
+                            </article>
+                        @endforeach
                     </div>
+
+                    @if ($jobs->hasPages())
+                        <nav class="seeker-jobs-pagination" aria-label="Halaman lowongan">
+                            <p class="seeker-jobs-pagination-info">
+                                Halaman {{ $jobs->currentPage() }} dari {{ $jobs->lastPage() }} ({{ $jobs->total() }} lowongan)
+                            </p>
+                            <div class="seeker-jobs-pagination-buttons">
+                                <a href="{{ $jobs->previousPageUrl() ?: '#' }}"
+                                   class="seeker-button {{ $jobs->onFirstPage() ? 'is-disabled' : '' }}"
+                                   @if ($jobs->onFirstPage()) aria-disabled="true" tabindex="-1" @endif>
+                                    Sebelumnya
+                                </a>
+                                <a href="{{ $jobs->nextPageUrl() ?: '#' }}"
+                                   class="seeker-button {{ ! $jobs->hasMorePages() ? 'is-disabled' : '' }}"
+                                   @if (! $jobs->hasMorePages()) aria-disabled="true" tabindex="-1" @endif>
+                                    Berikutnya
+                                </a>
+                            </div>
+                        </nav>
+                    @endif
                 @endif
-            </div>
+            </section>
+        </main>
+    </div>
 
-        </div>
-    </main>
-
-    <!-- JavaScript Autocomplete Lokasi -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const locations = [
-                "Jakarta Selatan", "Jakarta Timur", "Jakarta Barat", "Jakarta Utara", "Jakarta Pusat",
-                "Bekasi", "Depok", "Tangerang", "Tangerang Selatan", "Bogor",
-                "Bandung", "Cimahi", "Cirebon", "Sukabumi", "Tasikmalaya",
-                "Semarang", "Surakarta (Solo)", "Yogyakarta", "Magelang", "Purwokerto",
-                "Surabaya", "Malang", "Sidoarjo", "Gresik", "Kediri",
-                "Medan", "Palembang", "Pekanbaru", "Bandar Lampung", "Denpasar (Bali)",
-                "Makassar", "Manado", "Banjarmasin", "Balikpapan", "Pontianak"
+                'Jakarta Selatan', 'Jakarta Timur', 'Jakarta Barat', 'Jakarta Utara', 'Jakarta Pusat',
+                'Bekasi', 'Depok', 'Tangerang', 'Tangerang Selatan', 'Bogor',
+                'Bandung', 'Cimahi', 'Cirebon', 'Sukabumi', 'Tasikmalaya',
+                'Semarang', 'Surakarta (Solo)', 'Yogyakarta', 'Magelang', 'Purwokerto',
+                'Surabaya', 'Malang', 'Sidoarjo', 'Gresik', 'Kediri',
+                'Medan', 'Palembang', 'Pekanbaru', 'Bandar Lampung', 'Denpasar (Bali)',
+                'Makassar', 'Manado', 'Banjarmasin', 'Balikpapan', 'Pontianak'
             ];
 
             const input = document.getElementById('location-input');
             const dropdown = document.getElementById('location-dropdown');
             const list = document.getElementById('location-list');
 
+            if (!input || !dropdown || !list) {
+                return;
+            }
+
             input.addEventListener('input', function () {
                 const query = this.value.trim().toLowerCase();
                 list.innerHTML = '';
 
                 if (query.length === 0) {
-                    dropdown.classList.add('hidden');
+                    dropdown.hidden = true;
                     return;
                 }
 
-                const matches = locations.filter(loc => loc.toLowerCase().includes(query));
+                const matches = locations.filter((loc) => loc.toLowerCase().includes(query));
 
                 if (matches.length > 0) {
-                    matches.forEach(loc => {
+                    matches.forEach((loc) => {
                         const li = document.createElement('li');
-                        li.className = 'px-4 py-2.5 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer flex items-center space-x-2 transition font-medium';
-                        li.innerHTML = `<span class="text-emerald-600">📍</span> <span>${loc}</span>`;
-                        
+                        li.className = 'seeker-location-item';
+
+                        const pin = document.createElement('span');
+                        pin.textContent = '📍';
+                        const label = document.createElement('span');
+                        label.textContent = loc;
+
+                        li.append(pin, label);
                         li.addEventListener('click', function () {
                             input.value = loc;
-                            dropdown.classList.add('hidden');
+                            dropdown.hidden = true;
                         });
 
                         list.appendChild(li);
                     });
-                    dropdown.classList.remove('hidden');
+                    dropdown.hidden = false;
                 } else {
-                    dropdown.classList.add('hidden');
+                    dropdown.hidden = true;
                 }
             });
 
             document.addEventListener('click', function (e) {
                 if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.add('hidden');
+                    dropdown.hidden = true;
                 }
             });
         });

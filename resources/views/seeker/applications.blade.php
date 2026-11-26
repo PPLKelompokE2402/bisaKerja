@@ -9,17 +9,17 @@
 </head>
 <body class="seeker-applications" data-endpoint="{{ route('seeker.applications.index') }}" data-login="{{ route('login') }}">
     <header class="seeker-header">
-        <a href="{{ route('home') }}" class="seeker-logo">bisaKerja</a>
+        <a href="{{ route('jobs.index') }}" class="seeker-logo">bisaKerja</a>
         <span>Pencari Kerja</span>
         @include('components.logout-form', ['buttonClass' => 'seeker-button'])
     </header>
     <div class="seeker-layout">
         <aside class="seeker-sidebar">
             <nav aria-label="Navigasi pencari kerja">
-                <a href="{{ route('home') }}">Beranda</a>
+                <a href="{{ route('jobs.index') }}">Beranda</a>
                 <a href="{{ route('seeker.applications') }}" aria-current="page">Lamaran Saya</a>
                 <span class="seeker-disabled-menu" aria-disabled="true">Chat (Belum tersedia)</span>
-                <span class="seeker-disabled-menu" aria-disabled="true">Profil (Belum tersedia)</span>
+                <a href="{{ route('profile.edit') }}">Profil</a>
             </nav>
         </aside>
         <main class="seeker-content">

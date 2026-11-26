@@ -7,9 +7,10 @@ use App\Http\Controllers\Api\ProviderApplicantController;
 use App\Http\Controllers\Api\SeekerApplicationController;
 use App\Http\Controllers\ProviderController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 // Monitoring lamaran pencari kerja
-Route::middleware(['auth:sanctum', 'role:pencari_kerja', 'cache.headers:private;no_store'])
+Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum', 'role:pencari_kerja', 'cache.headers:private;no_store'])
     ->prefix('pencari/lamaran-saya')
     ->name('seeker.applications.')
     ->group(function () {

@@ -1,10 +1,6 @@
 (() => {
     const root = document.body;
     const token = sessionStorage.getItem('auth_token');
-    if (!token) {
-        window.location.assign(root.dataset.login);
-        return;
-    }
     const element = (id) => document.getElementById(`seeker-${id}`);
     const params = new URLSearchParams(window.location.search);
     const positivePage = (value) => Math.max(1, Number.parseInt(value, 10) || 1);
@@ -85,9 +81,18 @@
             const query = new URLSearchParams({ applications_page: pages.applications, history_page: pages.history });
             let response;
             try {
+                const headers = {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                };
+                if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                }
                 response = await fetch(`${root.dataset.endpoint}?${query}`, {
-                    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-                    signal: current.signal, cache: 'no-store',
+                    headers,
+                    credentials: 'same-origin',
+                    signal: current.signal,
+                    cache: 'no-store',
                 });
             } catch (error) {
                 if (error.name === 'AbortError') throw error;

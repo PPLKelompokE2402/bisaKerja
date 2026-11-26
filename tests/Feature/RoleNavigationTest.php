@@ -43,8 +43,8 @@ class RoleNavigationTest extends TestCase
         $this->actingAs($this->userWithRole('pencari_kerja'))
             ->get(route('seeker.applications'))
             ->assertOk()
-            ->assertViewIs('seeker.applications-entry')
-            ->assertSee(route('home'), false);
+            ->assertViewIs('seeker.applications')
+            ->assertSee(route('jobs.index'), false);
 
         foreach (['penyedia_pekerjaan', 'admin'] as $role) {
             $this->actingAs($this->userWithRole($role))

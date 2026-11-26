@@ -2,67 +2,106 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 class ProfileController extends Controller
 {
-    // Menampilkan halaman profil pengguna
-    public function edit(Request $request)
+    public function edit(Request $request): View
     {
-        $user = User::firstOrFail();
-
-        return view('profile.edit', compact('user'));
+        return view('profile.edit', [
+            'user' => $this->jobSeeker($request),
+        ]);
     }
 
-    // Memperbarui biodata dan CV pengguna
-    public function update(Request $request)
+    public function update(Request $request): RedirectResponse
     {
-        $user = User::firstOrFail();
+        $user = $this->jobSeeker($request);
 
         $validated = $request->validate([
-            'nama' => 'required|string|max:100',
-            'nomor_telepon' => 'required|string|max:20',
-            'alamat' => 'required|string',
-            'jenis_kelamin' => 'nullable|in:laki-laki,perempuan',
-            'deskripsi_diri' => 'nullable|string',
-            'keahlian' => 'required|string',
-            'pengalaman_kerja' => 'required|string',
-
-            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'cv' => 'nullable|file|mimes:pdf|max:5120',
+            'nama' => ['required', 'string', 'max:100'],
+            'nomor_telepon' => ['required', 'string', 'max:20'],
+            'alamat' => ['required', 'string', 'max:1000'],
+            'jenis_kelamin' => ['nullable', 'in:laki-laki,perempuan'],
+            'deskripsi_diri' => ['nullable', 'string', 'max:2000'],
+            'keahlian' => ['required', 'string', 'max:2000'],
+            'pengalaman_kerja' => ['required', 'string', 'max:2000'],
+            'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'cv' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
         ]);
 
-        // Upload foto profil
+        $oldPhotoPath = $user->foto_profil;
+        $oldCvPath = $user->cv;
+        $newPhotoPath = null;
+        $newCvPath = null;
+
         if ($request->hasFile('foto_profil')) {
+            $newPhotoPath = $request->file('foto_profil')->store('foto-profil', 'public');
 
-            if ($user->foto_profil) {
-                Storage::disk('public')->delete($user->foto_profil);
+            if ($newPhotoPath === false) {
+                throw new RuntimeException('Foto profil gagal disimpan. Silakan coba kembali.');
             }
 
-            $validated['foto_profil'] = $request
-                ->file('foto_profil')
-                ->store('foto-profil', 'public');
+            $validated['foto_profil'] = $newPhotoPath;
         }
 
-        // Upload CV
         if ($request->hasFile('cv')) {
+            $newCvPath = $request->file('cv')->store('cv', 'local');
 
-            if ($user->cv) {
-                Storage::disk('public')->delete($user->cv);
+            if ($newCvPath === false) {
+                $this->deleteStoredFile('public', $newPhotoPath);
+
+                throw new RuntimeException('CV gagal disimpan. Silakan coba kembali.');
             }
 
-            $validated['cv'] = $request
-                ->file('cv')
-                ->store('cv', 'public');
+            $validated['cv'] = $newCvPath;
         }
 
-        // Simpan perubahan biodata
-        $user->update($validated);
+        try {
+            $user->update($validated);
+        } catch (Throwable $exception) {
+            $this->deleteStoredFile('public', $newPhotoPath);
+            $this->deleteStoredFile('local', $newCvPath);
+
+            throw $exception;
+        }
+
+        if ($newPhotoPath !== null && $oldPhotoPath !== null && str_starts_with($oldPhotoPath, 'foto-profil/')) {
+            $this->deleteStoredFile('public', $oldPhotoPath);
+        }
+
+        if ($newCvPath !== null && $oldCvPath !== null && str_starts_with($oldCvPath, 'cv/')) {
+            $this->deleteStoredFile('local', $oldCvPath);
+            $this->deleteStoredFile('public', $oldCvPath);
+        }
 
         return redirect()
             ->route('profile.edit')
-            ->with('success', 'Profil berhasil diperbarui!');
+            ->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    private function jobSeeker(Request $request): User
+    {
+        $user = $request->user();
+
+        abort_unless($user instanceof User && $user->role === 'pencari_kerja', 403);
+
+        return $user;
+    }
+
+    private function deleteStoredFile(string $disk, ?string $path): void
+    {
+        if ($path !== null && ! Storage::disk($disk)->delete($path)) {
+            Log::warning('Gagal menghapus berkas profil.', [
+                'disk' => $disk,
+                'path' => $path,
+            ]);
+        }
     }
 }

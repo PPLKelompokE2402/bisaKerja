@@ -28,13 +28,47 @@ class SeekerApplicationTest extends TestCase
         $this->assertSame(2, substr_count($response->getContent(), '<table>'));
     }
 
-    public function test_authenticated_job_seeker_can_open_entry_without_exposing_application_data(): void
+    public function test_authenticated_job_seeker_can_open_main_page_directly_without_exposing_application_data(): void
     {
         $jobSeeker = User::factory()->create(['role' => 'pencari_kerja']);
+        $vacancy = JobVacancy::factory()->create(['judul' => 'Lowongan Rahasia Pelamar']);
+        Lamaran::factory()->create([
+            'id_pencari' => $jobSeeker->getKey(),
+            'id_lowongan' => $vacancy->getKey(),
+            'pesan_lamaran' => 'Pesan rahasia pelamar',
+        ]);
 
-        $this->actingAs($jobSeeker)
-            ->get(route('seeker.applications'))->assertOk()->assertSee('Memuat halaman Lamaran Saya...')
-            ->assertSee('seeker-applications-entry.js')->assertDontSee('<table>', false);
+        $response = $this->actingAs($jobSeeker)
+            ->get(route('seeker.applications'))
+            ->assertOk()
+            ->assertViewIs('seeker.applications')
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertSee('Lamaran')
+            ->assertSee('Riwayat pekerjaan')
+            ->assertSee('seeker-applications.js')
+            ->assertSee('data-endpoint="'.route('seeker.applications.index').'"', false)
+            ->assertDontSee('Memuat halaman Lamaran Saya...')
+            ->assertDontSee('seeker-applications-entry.js')
+            ->assertDontSee('Lowongan Rahasia Pelamar')
+            ->assertDontSee('Pesan rahasia pelamar');
+
+        $this->assertSame(2, substr_count($response->getContent(), '<table>'));
+    }
+
+    public function test_stateful_session_job_seeker_can_fetch_application_data_without_bearer_token(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'pencari_kerja']);
+        $vacancy = JobVacancy::factory()->create(['judul' => 'Pekerjaan Via Session']);
+        Lamaran::factory()->create([
+            'id_pencari' => $jobSeeker->getKey(),
+            'id_lowongan' => $vacancy->getKey(),
+        ]);
+
+        $this->actingAs($jobSeeker, 'web')
+            ->withHeaders(['Referer' => 'http://127.0.0.1:8000/lamaran-saya'])
+            ->getJson(self::ENDPOINT)
+            ->assertOk()
+            ->assertJsonPath('applications.data.0.pekerjaan', 'Pekerjaan Via Session');
     }
 
     public function test_guest_is_redirected_from_the_seeker_application_page_to_login(): void
