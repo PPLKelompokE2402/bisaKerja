@@ -7,23 +7,14 @@
     <link rel="stylesheet" href="{{ asset('css/seeker-applications.css') }}">
     <script src="{{ asset('js/seeker-applications.js') }}" defer></script>
 </head>
-<body class="seeker-applications" data-endpoint="{{ route('seeker.applications.index') }}" data-login="{{ route('login') }}">
-    <header class="seeker-header">
-        <a href="{{ route('jobs.index') }}" class="seeker-logo">bisaKerja</a>
-        <span>Pencari Kerja</span>
-        @include('components.logout-form', ['buttonClass' => 'seeker-button'])
-    </header>
+<body class="seeker-applications seeker-page" data-endpoint="{{ route('seeker.applications.index') }}" data-login="{{ route('login') }}">
+    <x-app-header />
     <div class="seeker-layout">
         <aside class="seeker-sidebar">
-            <nav aria-label="Navigasi pencari kerja">
-                <a href="{{ route('jobs.index') }}">Beranda</a>
-                <a href="{{ route('seeker.applications') }}" aria-current="page">Lamaran Saya</a>
-                <span class="seeker-disabled-menu" aria-disabled="true">Chat (Belum tersedia)</span>
-                <a href="{{ route('profile.edit') }}">Profil</a>
-            </nav>
+            <x-seeker.sidebar />
         </aside>
         <main class="seeker-content">
-            <p id="seeker-loading" class="seeker-loading" role="status">Memuat status lamaran...</p>
+            <p id="seeker-loading" class="seeker-loading" role="status" hidden>Memuat status lamaran...</p>
             <div id="seeker-error" class="seeker-error" role="alert" hidden>
                 <p></p>
                 <button id="seeker-retry" type="button" class="seeker-button">Coba lagi</button>
@@ -40,9 +31,7 @@
                         <table>
                             <caption class="seeker-sr-only">{{ $title }} milik akun Anda</caption>
                             <thead><tr><th scope="col">Pekerjaan</th><th scope="col">Upah</th><th scope="col">Tanggal melamar</th><th scope="col">Status</th></tr></thead>
-                            <tbody id="seeker-{{ $key }}-rows">
-                                <tr><td colspan="4" class="seeker-state">Memuat data...</td></tr>
-                            </tbody>
+                            <tbody id="seeker-{{ $key }}-rows"></tbody>
                         </table>
                         <p id="seeker-{{ $key }}-empty" class="seeker-state" hidden>{{ $empty }}</p>
                     </div>

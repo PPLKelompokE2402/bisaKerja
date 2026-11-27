@@ -19,6 +19,7 @@
     let status = element('status').value;
     let page = Math.max(1, Number.parseInt(params.get('page'), 10) || 1);
     let listRequest;
+    let listLoadingTimer;
     let detailRequest;
     let selectedId;
     let cvExtension = 'pdf';
@@ -73,8 +74,10 @@
         listRequest?.abort();
         listRequest = new AbortController();
         const request = listRequest;
-        element('loading').hidden = false;
-        element('results').hidden = true;
+        window.clearTimeout(listLoadingTimer);
+        listLoadingTimer = window.setTimeout(() => {
+            if (request === listRequest) element('loading').hidden = false;
+        }, 300);
         element('results').setAttribute('aria-busy', 'true');
         element('error').hidden = true;
         updateAddress();
@@ -120,6 +123,7 @@
             for (const count of document.querySelectorAll('[data-count]')) count.textContent = '—';
         } finally {
             if (request === listRequest) {
+                window.clearTimeout(listLoadingTimer);
                 element('loading').hidden = true;
                 element('results').setAttribute('aria-busy', 'false');
             }

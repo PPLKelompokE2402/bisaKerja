@@ -43,7 +43,7 @@
                 <p></p>
                 <button type="button" id="applicants-retry" class="applicants-button applicants-button-secondary">Coba lagi</button>
             </div>
-            <p id="applicants-loading" class="applicants-loading" role="status">Memuat data pelamar...</p>
+            <p id="applicants-loading" class="applicants-loading" role="status" hidden>Memuat data pelamar...</p>
             <section id="applicants-results" aria-label="Daftar pelamar" aria-busy="true">
                 <p class="applicants-scroll-hint">Geser tabel ke samping untuk melihat semua kolom.</p>
                 <div class="applicants-table-container">

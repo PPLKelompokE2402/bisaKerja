@@ -11,6 +11,7 @@
     const numberFormat = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
     const dateFormat = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' });
     let request;
+    let loadingTimer;
     let loaded = false;
     let disposed = false;
 
@@ -74,7 +75,10 @@
         const current = new AbortController();
         request = current;
         element('loading').textContent = loaded ? 'Memperbarui status lamaran...' : 'Memuat status lamaran...';
-        element('loading').hidden = false;
+        window.clearTimeout(loadingTimer);
+        loadingTimer = window.setTimeout(() => {
+            if (request === current) element('loading').hidden = false;
+        }, 300);
         element('error').hidden = true;
         for (const key of keys) element(key).setAttribute('aria-busy', 'true');
         try {
@@ -132,6 +136,7 @@
         } finally {
             if (request === current) {
                 request = null;
+                window.clearTimeout(loadingTimer);
                 element('loading').hidden = true;
                 for (const key of keys) element(key).setAttribute('aria-busy', 'false');
             }

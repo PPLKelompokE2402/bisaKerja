@@ -162,7 +162,9 @@ Route::get('/home', function (Request $request) {
 
     return match ($user->role) {
         'pencari_kerja' => redirect()->route('jobs.index'),
-        'penyedia_pekerjaan' => view('jobs.home'),
+        'penyedia_pekerjaan' => $request->query('view') === 'pelamar-saya'
+            ? view('provider.applicants')
+            : view('jobs.home'),
         'admin' => redirect()->route('admin.dashboard'),
         default => abort(403),
     };
